@@ -1,4 +1,4 @@
-<img src="https://iknl.nl/images/default-source/images/.png?sfvrsn=3" align="right">
+<img src="https://github.com/IKNL/guidelines/blob/master/resources/logos/vantage6.png?raw=true" width=200 align="right">
 
 # d_boilerplate
 Boilerplate for new algorithms. 
