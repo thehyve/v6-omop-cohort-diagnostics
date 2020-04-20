@@ -1,7 +1,7 @@
 <img src="https://github.com/IKNL/guidelines/blob/master/resources/logos/vantage6.png?raw=true" width=200 align="right">
 
-# d_boilerplate
-Boilerplate for new algorithms. 
+# v6-boilerplate-py
+Boilerplate for new [vantage6](https://vantage6.ai) algorithms. 
 
 ## main.py
 Is the main entry-point of the docker-container. You need to specify the list
