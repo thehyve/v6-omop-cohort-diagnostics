@@ -1,22 +1,15 @@
 # basic python3 image as base
-FROM python:3
+FROM harbor.vantage6.ai/algorithms/algorithm-base
 
-# copy all local files to the image
-COPY . /
+# This is a placeholder that should be overloaded by invoking
+# docker build with '--build-arg PKG_NAME=...'
+ARG PKG_NAME="v6-boilerplate-py"
 
-# for testing locally only
-# ENV DATABASE_URI /app/local/database.csv
+# install federated algorithm
+COPY . /app
+RUN pip install /app
 
-# install pytaskmanager
-WORKDIR /ppdli
-RUN git clone -b E2EE https://github.com/IKNL/ppDLI.git .
-RUN pip install .
+ENV PKG_NAME=${PKG_NAME}
 
-
-# install external dependancies into environment
-WORKDIR /
-COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
-
-# execute algorithm in the container
-CMD ["python", "./main.py"]
+# Tell docker to execute `docker_wrapper()` when the image is run.
+CMD python -c "from vantage6.tools.docker_wrapper import docker_wrapper; docker_wrapper('${PKG_NAME}')"
