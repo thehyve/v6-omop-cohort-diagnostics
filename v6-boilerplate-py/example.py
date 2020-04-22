@@ -1,4 +1,3 @@
-import os, sys
 from vantage6.tools.mock_client import ClientMockProtocol
 from vantage6.tools.container_client import ClientContainerProtocol
 
