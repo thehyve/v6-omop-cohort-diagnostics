@@ -37,6 +37,7 @@ def master(client, data, *args, **kwargs):
     }
 
     # create a new task for all organizations in the collaboration.
+    info("Dispatching node-tasks")
     task = client.create_new_task(
         input_=input_,
         organization_ids=ids
@@ -45,6 +46,7 @@ def master(client, data, *args, **kwargs):
     # wait for node to return results. Instead of polling it is also
     # possible to subscribe to a websocket channel to get status
     # updates
+    info("Waiting for resuls")
     task_id = task.get("id")
     task = client.get_task(task_id)
     while not task.get("complete"):
@@ -55,7 +57,7 @@ def master(client, data, *args, **kwargs):
     info("Obtaining results")
     results = client.get_results(task_id=task.get("id"))
     print(results)
-    results = [json.loads(result.get("result")) for result in results]
+    # results = [json.loads(result.get("result")) for result in results]
 
     info("master algorithm complete")
 
