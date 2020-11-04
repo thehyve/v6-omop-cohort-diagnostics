@@ -1,9 +1,9 @@
 # basic python3 image as base
 FROM harbor.vantage6.ai/algorithms/algorithm-base
-
+LABEL maintainer="Hasan Alradhi <h.alradhi@iknl.nl>"
 # This is a placeholder that should be overloaded by invoking
 # docker build with '--build-arg PKG_NAME=...'
-ARG PKG_NAME="v6-boilerplate-py"
+ARG PKG_NAME="v6-histogram-py"
 
 # install federated algorithm
 COPY . /app
