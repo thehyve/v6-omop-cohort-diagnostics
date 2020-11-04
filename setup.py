@@ -15,12 +15,12 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 # setup the package
 setup(
-    name='v6-histogram-py',
+    name='v6-boilerplate-py',
     version="1.0.0",
-    description='vantage6 histogram',
+    description='vantage6 biolerplate',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/IKNL/vtg.histogram',
+    url='https://github.com/IKNL/v6_boilerplate-py',
     packages=find_packages(),
     python_requires='>=3.6',
     install_requires=[

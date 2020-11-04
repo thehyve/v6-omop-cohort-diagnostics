@@ -7,38 +7,37 @@
 
 --------------------
 
-# v6-histogram-py
-This algoithm is part of the [vantage6](https://vantage6.ai) solution. Vantage6 allowes to execute computations on federated datasets.
+# v6-boilerplate-py
+This algoithm is part of the [vantage6](https://vantage6.ai) solution. Vantage6 allowes to execute computations on federated datasets. This repository provides a boilerplate for new algorithms.
 
 ## Usage
-
-```python
-from vantage6.client import Client
-
-# Authenticate to the server
-client = Client("http://127.0.0.1", 5000, "/api")
-client.authenticate("frank@iknl.nl", "password")
-client.setup_encryption(None)
-
-# algorithm input
-input_ = {
-    "master": True,
-    "method": "histogram_master", # or "round_robin_master"
-    "args": [["Column from dataframe"], "number of bins", "minimum number of patients per bar"]
-}
-
-# Create task for the server
-task = client.post_task(
-    "testing task",
-    "harbor.vantage6.ai/algorithms/histogram",
-    collaboration_id=2,
-    input_=input_,
-    organization_ids=[1]
-)
-
-# obtain the results
-client.get_results(task_id=task.get("id"))
+First clone the repository.
+```bash
+# Clone this repository
+git clone https://github.com/IKNL/v6-boilerplate-py
 ```
+Rename the directories to something that fits your algorithm, we use the convention `v6-{name}-{langauge}`. Then you can edit the following files:
+
+### Dockerfile
+Update the `ARG PKG_NAME=...` to the name of your algorithm (preferable the same as the directory name).
+
+### LICENCE
+Determine which license suits your project.
+
+### {algorithm_name}/__init__.py
+Contains all the methods that can be called at the nodes. All __regular__ definitions in this file that have the prefix `RPC_` are callable by an external party. If you define a __master__ method, it should *not* contain the prefix! The __master__ and __regular__ definitions both have there own signature. __Master__ definitions have a __client__ and __data__ argument (and possible some other arguments), while the __regular__ definition only has the __data__ argument. The data argument is a [pandas dataframe](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.html?highlight=dataframe#pandas.DataFrame) and the client argument is a `ClientContainerProtocol` or `ClientMockProtocol` from the [vantage6-toolkit](https://github.com/IKNL/vantage6-toolkit). The master and regular definitions signatures should look like:
+```python
+def some_master_name(client, data, *args, **kwargs):
+    # do something
+    pass
+
+def RPC_some_regular_method(data, *args, **kwargs):
+    # do something
+    pass
+```
+
+### setup.py
+In order for the Docker image to find the methods the algorithm needs to be installable. Make sure the *name* matches the `ARG PKG_NAME` in the Dockerfile.
 
 ## Read more
 See the [documentation](https://docs.vantage6.ai/) for detailed instructions on how to install and use the server and nodes.
