@@ -1,20 +1,15 @@
-# This specifies our base image. This base image contains some commonly used
-# dependancies and an install from all vantage6 packages. You can specify a
-# different image here (e.g. python:3). In that case it is important that
-# `vantage6-client` is a dependancy of you project as this contains the wrapper
-# we are using in this example.
+# basic python3 image as base
 FROM harbor.vantage6.ai/algorithms/algorithm-base
 
-# Change this to the package name of your project. This needs to be the same
-# as what you specified for the name in the `setup.py`.
-ARG PKG_NAME="v6-average-py"
+# This is a placeholder that should be overloaded by invoking
+# docker build with '--build-arg PKG_NAME=...'
+ARG PKG_NAME="v6-boilerplate-py"
 
-# This will install your algorithm into this image.
+# install federated algorithm
 COPY . /app
 RUN pip install /app
 
-# This will run your algorithm when the Docker container is started. The
-# wrapper takes care of the IO handling (communication between node and
-# algorithm). You dont need to change anything here.
 ENV PKG_NAME=${PKG_NAME}
+
+# Tell docker to execute `docker_wrapper()` when the image is run.
 CMD python -c "from vantage6.tools.docker_wrapper import docker_wrapper; docker_wrapper('${PKG_NAME}')"

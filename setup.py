@@ -2,26 +2,36 @@ from os import path
 from codecs import open
 from setuptools import setup, find_packages
 
-# we're using a README.md, if you do not have this in your folder, simply
-# replace this with a string.
+# get current directory
 here = path.abspath(path.dirname(__file__))
+
+# get the long description from the README file
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-# Here you specify the meta-data of your package. The `name` argument is
-# needed in some other steps.
+# # read the API version from disk
+# with open(path.join(here, 'vantage6', 'tools', 'VERSION')) as fp:
+#     __version__ = fp.read()
+
+# setup the package
 setup(
-    name='v6-average-py',
+    name='v6-boilerplate-py',
     version="1.0.0",
-    description='vantage6 average',
+    description='vantage6 biolerplate',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/IKNL/v6-average-py',
+    url='https://github.com/IKNL/v6_boilerplate-py',
     packages=find_packages(),
     python_requires='>=3.6',
     install_requires=[
-        'vantage6-client',
-        # list your dependancies here:
-        # pandas, ...
+        # 'vantage6-client'
     ]
+    # ,
+    # extras_require={
+    # },
+    # package_data={
+    #     'vantage6.tools': [
+    #         'VERSION'
+    #     ],
+    # }
 )
