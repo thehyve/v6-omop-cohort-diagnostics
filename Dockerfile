@@ -9,6 +9,9 @@ ARG PKG_NAME="v6-boilerplate-py"
 COPY . /app
 RUN pip install /app
 
+# expose a port that may be used for communication to other algorithms via VPN. Default is 8888.
+EXPOSE 8888
+
 ENV PKG_NAME=${PKG_NAME}
 
 # Tell docker to execute `docker_wrapper()` when the image is run.
