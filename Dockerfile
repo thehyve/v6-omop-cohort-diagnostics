@@ -9,9 +9,9 @@ ARG PKG_NAME="v6-boilerplate-py"
 COPY . /app
 RUN pip install /app
 
-# In Vantage6 versions 3.0+, you can use VPN to communicate between nodes.
-# The algorithms are only allowed to communicate via VPN over specific ports,
-# that may be specified here, along with a label that helps you identify them.
+# In Vantage6 versions 3.1+, you can use VPN communication between algorithms
+# over multiple ports. You can specify the ports that are allowed for
+# communication here, along with a label that helps you identify them.
 # If no ports are specified (and VPN is available), only port 8888 is available
 # by default
 EXPOSE 8888
