@@ -15,9 +15,9 @@ RUN pip install /app
 # If no ports are specified (and VPN is available), only port 8888 is available
 # by default
 EXPOSE 8888
-LABEL p8888 = 'Explanation usage port 8888'
+LABEL p8888 = 'message_queue'
 EXPOSE 9999
-LABEL p9999 = 'Explanation usage port 9999'
+LABEL p9999 = 'other_label'
 
 ENV PKG_NAME=${PKG_NAME}
 
