@@ -9,8 +9,15 @@ ARG PKG_NAME="v6-boilerplate-py"
 COPY . /app
 RUN pip install /app
 
-# expose a port that may be used for communication to other algorithms via VPN. Default is 8888.
+# In Vantage6 versions 3.1+, you can use VPN communication between algorithms
+# over multiple ports. You can specify the ports that are allowed for
+# communication here, along with a label that helps you identify them.
+# If no ports are specified (and VPN is available), only port 8888 is available
+# by default
 EXPOSE 8888
+LABEL p8888 = 'message_queue'
+EXPOSE 9999
+LABEL p9999 = 'other_label'
 
 ENV PKG_NAME=${PKG_NAME}
 

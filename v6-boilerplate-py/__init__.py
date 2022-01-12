@@ -46,7 +46,7 @@ def master(client, data, *args, **kwargs):
     # wait for node to return results. Instead of polling it is also
     # possible to subscribe to a websocket channel to get status
     # updates
-    info("Waiting for resuls")
+    info("Waiting for results")
     task_id = task.get("id")
     task = client.get_task(task_id)
     while not task.get("complete"):
