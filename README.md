@@ -16,7 +16,7 @@ First clone the repository.
 # Clone this repository
 git clone https://github.com/IKNL/v6-boilerplate-py
 ```
-Rename the directories to something that fits your algorithm, we use the convention `v6-{name}-{langauge}`. Then you can edit the following files:
+Rename the directories to something that fits your algorithm, we use the convention `v6-{name}-{language}`. Then you can edit the following files:
 
 ### Dockerfile
 Update the `ARG PKG_NAME=...` to the name of your algorithm (preferable the same as the directory name).
