@@ -17,14 +17,15 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 setup(
     name='v6-boilerplate-py',
     version="1.0.0",
-    description='vantage6 biolerplate',
+    description='vantage6 boilerplate',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/IKNL/v6_boilerplate-py',
     packages=find_packages(),
-    python_requires='>=3.6',
+    python_requires='>=3.10',
     install_requires=[
-        # 'vantage6-client'
+        'vantage6-algorithm-tools',
+        'pandas',
     ]
     # ,
     # extras_require={

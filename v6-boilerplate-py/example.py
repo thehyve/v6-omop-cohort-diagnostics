@@ -1,26 +1,49 @@
-from vantage6.tools.mock_client import ClientMockProtocol
-from vantage6.tools.container_client import ClientContainerProtocol
+from vantage6.algorithm.tools.mock_client import MockAlgorithmClient
 
 
 ## Mock client
-client = ClientMockProtocol(["local/data.csv", "local/data.csv"], "v6-boilerplate-py")
-# client = ClientContainerProtocol(
-#     "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1ODc0NzY4OTAsIm5iZiI6MTU4NzQ3Njg5MCwianRpIjoiNzNmNWI1MjEtZWQwMi00YzFkLTg4ZDUtOGM4N2EzYjEwMWJhIiwiaWRlbnRpdHkiOnsidHlwZSI6ImNvbnRhaW5lciIsIm5vZGVfaWQiOjQsImNvbGxhYm9yYXRpb25faWQiOjEsInRhc2tfaWQiOjE2MDEsImltYWdlIjoiaGVsbG8td29ybGQifSwiZnJlc2giOmZhbHNlLCJ0eXBlIjoiYWNjZXNzIiwidXNlcl9jbGFpbXMiOnsidHlwZSI6ImNvbnRhaW5lciIsInJvbGVzIjpbXX19.SxjyOjo-6rhz5-v17PvbSvC8WrsafEFIvhw2uPjrkbM",
-#     host="https://trolltunga.vantage6.ai",
-#     port=443,
-#     path=""
-# )
+client = MockAlgorithmClient(
+    datasets=[
+        {
+            "database": "local/data.csv", 
+            "type": "csv",
+            "input_data": {}
+        },
+        {
+            "database": "local/data.csv", 
+            "type": "csv",
+            "input_data": {}
+        }
+    ], 
+    module="v6-boilerplate-py"
+)
 
-organizations = client.get_organizations_in_my_collaboration()
+# list mock organizations
+organizations = client.organization.list()
 print(organizations)
-ids = [organization["id"] for organization in organizations]
+org_ids = [organization["id"] for organization in organizations]
 
-task = client.create_new_task({"method":"some_example_method"}, ids)
+# Run a method in the algorithm for all nodes
+task = client.task.create(
+    input_={
+        "method":"some_example_method",
+        "kwargs": {
+            "example_arg": "example_value"
+        }
+    }, 
+    organizations=org_ids)
 print(task)
 
-results = client.get_results(task.get("id"))
+# Get the results from the task
+results = client.result.get(task.get("id"))
+# or, alternatively:
+# results = client.wait_for_results(task.get("id"))
 print(results)
 
-master_task = client.create_new_task({"master": 1, "method":"master"}, [ids[0]])
+# Run the central method on 1 node and get the results
+central_task = client.task.create(
+    input_={"method":"master"}, 
+    organization=[org_ids[0]]
+)
 results = client.get_results(task.get("id"))
 print(results)
