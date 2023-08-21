@@ -1,14 +1,14 @@
 """
 This file contains all algorithm pieces that are executed on the nodes.
-It is important to note that the central method is executed on a node, just 
+It is important to note that the central method is executed on a node, just
 like any other method.
 
-The results in a return statement are sent to the central vantage6 server after 
+The results in a return statement are sent to the central vantage6 server after
 encryption (if that is enabled).
 """
 import pandas as pd
 
-from vantage6.algorithm.tools.util import info, warn
+from vantage6.algorithm.tools.util import info
 from vantage6.algorithm.tools.decorators import algorithm_client, data
 from vantage6.algorithm.client import AlgorithmClient
 
@@ -39,7 +39,7 @@ def central(client: AlgorithmClient):
         description="This is a very important subtask"
     )
 
-    # wait for node to return results. 
+    # wait for node to return results.
     info("Waiting for results")
     results = client.wait_for_results(task_id=task.get("id"))
 
@@ -52,13 +52,13 @@ def central(client: AlgorithmClient):
     return results
 
 @data(1)
-def RPC_some_example_method(data: pd.DataFrame, example_arg: str):
+def some_example_method(df: pd.DataFrame, example_arg: str):
     """Some_example_method.
 
     This example returns average age by gender.
     """
     info("Computing mean age by gender")
-    result = data[["Sex", "Age"]].groupby("Sex").mean()
+    result = df[["Sex", "Age"]].groupby("Sex").mean()
 
     # what you return here is sent to the central server. So make sure
     # no privacy sensitive data is shared

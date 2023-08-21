@@ -5,16 +5,16 @@ from vantage6.algorithm.tools.mock_client import MockAlgorithmClient
 client = MockAlgorithmClient(
     datasets=[
         {
-            "database": "local/data.csv", 
+            "database": "local/data.csv",
             "type": "csv",
             "input_data": {}
         },
         {
-            "database": "local/data.csv", 
+            "database": "local/data.csv",
             "type": "csv",
             "input_data": {}
         }
-    ], 
+    ],
     module="v6-boilerplate-py"
 )
 
@@ -30,7 +30,7 @@ task = client.task.create(
         "kwargs": {
             "example_arg": "example_value"
         }
-    }, 
+    },
     organizations=org_ids)
 print(task)
 
@@ -42,8 +42,8 @@ print(results)
 
 # Run the central method on 1 node and get the results
 central_task = client.task.create(
-    input_={"method":"master"}, 
-    organization=[org_ids[0]]
+    input_={"method":"some_central_method"},
+    organizations=[org_ids[0]]
 )
-results = client.get_results(task.get("id"))
+results = client.result.from_task(task.get("id"))
 print(results)
