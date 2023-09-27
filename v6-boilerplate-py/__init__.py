@@ -12,6 +12,7 @@ from vantage6.algorithm.tools.util import info
 from vantage6.algorithm.tools.decorators import algorithm_client, data
 from vantage6.algorithm.client import AlgorithmClient
 
+
 @algorithm_client
 def central(client: AlgorithmClient):
     """Central part of the algorithm."""
@@ -34,7 +35,7 @@ def central(client: AlgorithmClient):
     info("Dispatching node-tasks")
     task = client.task.create(
         input_=input_,
-        organization_ids=org_ids,
+        organizations=org_ids,
         name="My subtask",
         description="This is a very important subtask"
     )
@@ -50,6 +51,7 @@ def central(client: AlgorithmClient):
 
     # return the final results of the algorithm
     return results
+
 
 @data(1)
 def some_example_method(df: pd.DataFrame, example_arg: str):
