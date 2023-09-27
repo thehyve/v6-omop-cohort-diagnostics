@@ -1,78 +1,67 @@
-""" methods.py
-
-This file contains all algorithm pieces that are executed on the nodes.
-It is important to note that the master method is also triggered on a
-node just the same as any other method.
-
-When a return statement is reached the result is send to the central
-server after encryption.
 """
-import os
-import sys
-import time
-import json
-import pandas
+This file contains all algorithm pieces that are executed on the nodes.
+It is important to note that the central method is executed on a node, just
+like any other method.
 
-from vantage6.tools.util import info, warn
+The results in a return statement are sent to the central vantage6 server after
+encryption (if that is enabled).
+"""
+import pandas as pd
+
+from vantage6.algorithm.tools.util import info
+from vantage6.algorithm.tools.decorators import algorithm_client, data
+from vantage6.algorithm.client import AlgorithmClient
 
 
-def master(client, data, *args, **kwargs):
-    """Master algoritm.
+@algorithm_client
+def central(client: AlgorithmClient):
+    """Central part of the algorithm."""
 
-    The master algorithm is the chair of the Round Robin, which makes
-    sure everyone waits for their turn to identify themselfs.
-    """
-
-    # get all organizations (ids) that are within the collaboration
-    # FlaskIO knows the collaboration to which the container belongs
-    # as this is encoded in the JWT (Bearer token)
-    organizations = client.get_organizations_in_my_collaboration()
-    ids = [organization.get("id") for organization in organizations]
+    # get all organizations (ids) within the collaboration
+    organizations = client.organization.list()
+    org_ids = [organization.get("id") for organization in organizations]
 
     # The input fot the algorithm is the same for all organizations
     # in this case
     info("Defining input parameters")
     input_ = {
         "method": "some_example_method",
+        "kwargs": {
+            "example_arg": "example_value"
+        }
     }
 
     # create a new task for all organizations in the collaboration.
     info("Dispatching node-tasks")
-    task = client.create_new_task(
+    task = client.task.create(
         input_=input_,
-        organization_ids=ids
+        organizations=org_ids,
+        name="My subtask",
+        description="This is a very important subtask"
     )
 
-    # wait for node to return results. Instead of polling it is also
-    # possible to subscribe to a websocket channel to get status
-    # updates
+    # wait for node to return results.
     info("Waiting for results")
-    task_id = task.get("id")
-    task = client.get_task(task_id)
-    while not task.get("complete"):
-        task = client.get_task(task_id)
-        info("Waiting for results")
-        time.sleep(1)
+    results = client.wait_for_results(task_id=task.get("id"))
 
-    info("Obtaining results")
-    results = client.get_results(task_id=task.get("id"))
+    info("Results obtained!")
     print(results)
-    # results = [json.loads(result.get("result")) for result in results]
 
     info("master algorithm complete")
 
-    # return all the messages from the nodes
+    # return the final results of the algorithm
     return results
 
-def RPC_some_example_method(data, *args, **kwargs):
+
+@data(1)
+def some_example_method(df: pd.DataFrame, example_arg: str):
     """Some_example_method.
 
-    loads the dataframe and reports if it succeeded by returning a
-    boolean value.
+    This example returns average age by gender.
     """
-    info("Computing mean age for males and females")
-    result = data[["Sex", "Age"]].groupby("Sex").mean()
+    info("Computing mean age by gender")
+    result = df[["Sex", "Age"]].groupby("Sex").mean()
 
-    # what you return here is send to the central server. So make sure
+    # what you return here is sent to the central server. So make sure
     # no privacy sensitive data is shared
     return result.to_dict()

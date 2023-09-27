@@ -11,15 +11,16 @@ RUN pip install /app
 
 # In Vantage6 versions 3.1+, you can use VPN communication between algorithms
 # over multiple ports. You can specify the ports that are allowed for
-# communication here, along with a label that helps you identify them.
-# If no ports are specified (and VPN is available), only port 8888 is available
-# by default
+# communication here, along with a label that helps you identify them. As an
+# example, port 8888 is used here. You can also specify additional ports in the
+# same way, by adding an extra EXPOSE and LABEL statement
 EXPOSE 8888
-LABEL p8888 = 'message_queue'
-EXPOSE 9999
-LABEL p9999 = 'other_label'
+LABEL p8888 = 'some_label'
 
+# Set environment variable to make name of the package available within the
+# docker image.
 ENV PKG_NAME=${PKG_NAME}
 
-# Tell docker to execute `docker_wrapper()` when the image is run.
-CMD python -c "from vantage6.tools.docker_wrapper import docker_wrapper; docker_wrapper('${PKG_NAME}')"
+# Tell docker to execute `wrap_algorithm()` when the image is run. This function
+# will ensure that the algorithm method is called properly.
+CMD python -c "from vantage6.algorithm.tools.wrap import wrap_algorithm; wrap_algorithm('${PKG_NAME}')"
