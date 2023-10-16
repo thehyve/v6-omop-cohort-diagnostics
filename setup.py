@@ -14,18 +14,25 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 #     __version__ = fp.read()
 
 # setup the package
+# TODO the ohdsi tools need to be installed in the wrapper
 setup(
-    name='v6-boilerplate-py',
+    name='v6-omop-test',
     version="1.0.0",
-    description='vantage6 boilerplate',
+    description='vantage6 omop test algorithm',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/IKNL/v6_boilerplate-py',
+    url='',
     packages=find_packages(),
     python_requires='>=3.10',
     install_requires=[
         'vantage6-algorithm-tools',
         'pandas',
+	    'ohdsi-database-connector',
+	    'ohdsi-circe',
+	    'ohdsi-feature-extraction',
+	    'ohdsi-cohort-generator',
+	    'ohdsi-cohort-diagnostics',
+	    'ohdsi-common'
     ]
     # ,
     # extras_require={
