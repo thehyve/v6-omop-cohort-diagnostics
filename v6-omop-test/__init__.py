@@ -1,38 +1,74 @@
 """
 This file contains all algorithm pieces that are executed on the nodes.
-It is important to note that the central method is executed on a node, just
+It is important to note that the main method is executed on a node, just
 like any other method.
 
 The results in a return statement are sent to the central vantage6 server after
-encryption (if that is enabled).
+encryption (if that is enabled for the collaboration).
 """
 import pandas as pd
 
 from vantage6.algorithm.tools.util import info
 from vantage6.algorithm.tools.decorators import (
+    algorithm_client,
+    AlgorithmClient,
     database_connection,
     metadata,
     RunMetaData,
-    OMOPMetaData
+    OHDSIMetaData
 )
 
 from ohdsi import circe
 from ohdsi import cohort_generator
 from ohdsi import common as ohdsi_common
 from ohdsi import feature_extraction
-from ohdsi import cohort_diagnostics
+from ohdsi import cohort_diagnostics as ohdsi_cohort_diagnostics
 
 from rpy2.robjects import RS4
 
 
-@database_connection(type_="OMOP")
-@metadata(type_="omop")
-@metadata(type_="run")
-def partial(meta_run: RunMetaData, meta_omop: OMOPMetaData, connection: RS4,
-            cohort_definitions: dict, cohort_names: list[str],
-            temporal_covariate_settings: dict, diagnostics_settings: dict) \
-                -> pd.DataFrame:
-    """Central part of the algorithm."""
+@algorithm_client
+def main(client: AlgorithmClient, cohort_definitions: dict,
+         cohort_names: list[str], temporal_covariate_settings: dict,
+         diagnostics_settings: dict) -> list[pd.DataFrame]:
+
+    info('Collecting participating organizations')
+    organizations = client.organization.list()
+    ids = [org['id'] for org in organizations]
+
+    # This requests the cohort diagnostics to be computed on all nodes
+    info('Requesting partial computation')
+    task = client.task.create(
+        input_={
+            'method': 'cohort_diagnostics',
+            'kwargs': {
+                'cohort_definitions': cohort_definitions,
+                'cohort_names': cohort_names,
+                'temporal_covariate_settings': temporal_covariate_settings,
+                'diagnostics_settings': diagnostics_settings
+            }
+        },
+        organizations=ids
+    )
+    info(f'Task assigned, id: {task.get("id")}')
+
+    # This function is blocking until the results from all nodes are in
+    info('Waiting for results')
+    all_results = client.wait_for_results(task_id=task['id'])
+
+    info('Results received, sending them back to server')
+    return all_results
+
+
+
+@metadata
+@database_connection(types=["OMOP"], include_metadata=True)
+def cohort_diagnostics(
+    connection: RS4, meta_omop: OHDSIMetaData, meta_run: RunMetaData,
+    cohort_definitions: dict, cohort_names: list[str],
+    temporal_covariate_settings: dict, diagnostics_settings: dict
+) -> pd.DataFrame:
+    """Computes the OHDSI cohort diagnostics."""
 
     # Generate unique cohort ids, based on the task id and the number of files.
     # The first six digits are the task id, the last three digits are the index
@@ -82,7 +118,7 @@ def partial(meta_run: RunMetaData, meta_omop: OMOPMetaData, connection: RS4,
             **temporal_covariate_settings)
     info("Created temporal covariate settings")
 
-    cohort_diagnostics.execute_diagnostics(
+    ohdsi_cohort_diagnostics.execute_diagnostics(
         cohort_definition_set=cohort_definition_set,
         export_folder=str(meta_omop.export_folder / 'exports'),
         database_id=meta_run.task_id,
