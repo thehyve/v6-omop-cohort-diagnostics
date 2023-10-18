@@ -28,9 +28,9 @@ from rpy2.robjects import RS4
 
 
 @algorithm_client
-def main(client: AlgorithmClient, cohort_definitions: dict,
-         cohort_names: list[str], temporal_covariate_settings: dict,
-         diagnostics_settings: dict) -> list[pd.DataFrame]:
+def central(client: AlgorithmClient, cohort_definitions: dict,
+            cohort_names: list[str], temporal_covariate_settings: dict,
+            diagnostics_settings: dict) -> list[pd.DataFrame]:
 
     info('Collecting participating organizations')
     organizations = client.organization.list()
@@ -58,7 +58,6 @@ def main(client: AlgorithmClient, cohort_definitions: dict,
 
     info('Results received, sending them back to server')
     return all_results
-
 
 
 @metadata
