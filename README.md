@@ -16,7 +16,7 @@ contains an example OMOP algorithm that computes the cohort
 
 ## Algorithm overview
 <p align="center">
-    ![algorithm overview](img/cohort_diagnostics.png)
+    <img src="img/cohort_diagnostics.png" alt="algorithm overview">
 </p>
 
 ## Node configuration
