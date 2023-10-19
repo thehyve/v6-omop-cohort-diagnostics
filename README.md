@@ -14,6 +14,10 @@ This algorithm is part of the [vantage6](https://vantage6.ai) solution.
 Vantage6 allows to execute computations on federated datasets. This repository
 contains an example OMOP algorithm that computes the cohort
 
+## Algorithm overview
+
+![algorithm overview](img/cohort_diagnostics.png)
+
 ## Node configuration
 In order for this algorithm to run the vantage6 node needs to be properly
 configured:
