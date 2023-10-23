@@ -1,11 +1,15 @@
 # basic python3 image as base
 #FROM harbor2.vantage6.ai/infrastructure/algorithm-base
-FROM algobase-omop-dev-slim
+FROM harbor2.vantage6.ai/infrastructure/algorithm-ohdsi-base:4.1
 
 # This is a placeholder that should be overloaded by invoking
 # docker build with '--build-arg PKG_NAME=...'
 ARG PKG_NAME="v6-omop-test"
 
+#install some dangling R dependencies
+RUN Rscript -e "install.packages('scales')"
+RUN Rscript -e "install.packages('pool')"
+RUN Rscript -e "install.packages('later')"
 # install federated algorithm
 COPY . /app
 RUN pip install /app
@@ -18,14 +22,6 @@ RUN pip install /app
 #EXPOSE 8888
 #LABEL p8888 = 'some_label'
 
-# TODO: remove me at release
-RUN apt update && apt install -y git
-RUN pip install --force-reinstall git+https://github.com/vantage6/vantage6@feature/extemding-wrapper-for-omop#subdirectory=vantage6-algorithm-tools
-
-#install some dangling R dependencies
-RUN Rscript -e "install.packages('scales')"
-RUN Rscript -e "install.packages('pool')"
-RUN Rscript -e "install.packages('later')"
 
 # Set environment variable to make name of the package available within the
 # docker image.

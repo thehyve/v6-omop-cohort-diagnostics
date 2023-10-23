@@ -73,10 +73,13 @@ def cohort_diagnostics(
     # The first six digits are the task id, the last three digits are the index
     # of the file.
     n = len(cohort_definitions)
+
     cohort_definition_set = pd.DataFrame(
         {
-            'cohortId': [float(f'{meta_run.task_id:06d}{i:03d}') for i in
-                         range(0, n)],
+            'cohortId': [
+                float(f'{meta_run.node_id}{meta_run.task_id:06d}{i:03d}')
+                for i in range(0, n)
+            ],
             'cohortName': cohort_names,
             'json': cohort_definitions,
             'sql': [_create_cohort_query(cohort) for cohort in
@@ -88,7 +91,7 @@ def cohort_diagnostics(
     info(f"Generated {n} cohort definitions")
 
     # Generate the table names for the cohort tables
-    cohort_table = f'cohort_{meta_run.task_id}'
+    cohort_table = f'cohort_{meta_run.task_id}_{meta_run.node_id}'
     cohort_table_names = cohort_generator.get_cohort_table_names(cohort_table)
     info(f"Cohort table name: {cohort_table}")
     info(f"Tables: {cohort_table_names}")
