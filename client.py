@@ -2,14 +2,14 @@ from pathlib import Path
 from vantage6.client import Client
 
 # Authenticate to the vantage6 server
-client = Client('http://127.0.0.1', 5000, '/api', log_level='debug')
-client.authenticate('org_1-admin', 'password')
+client = Client("http://127.0.0.1", 5000, "/api", log_level="debug")
+client.authenticate("org_1-admin", "password")
 client.setup_encryption(None)
 
 # Load the cohort definitions from a folder. These can be created using the
 # ATLAS tool
-folder_ = Path(r"C:\Users\FMa1805.36838\IKNL\524_Clinical Data Science_int - Infrastructure\OMOP utils")
-files = list(folder_.glob('*.json'))
+folder_ = Path(r"./cohort_definitions/")
+files = list(folder_.glob("*.json"))
 omop_jsons = [(folder_ / file_).read_text() for file_ in files]
 names = [file_.stem for file_ in files]
 
@@ -19,39 +19,39 @@ names = [file_.stem for file_ in files]
 # OHDSI package: https://ohdsi.github.io/FeatureExtraction/reference/createTemporalCovariateSettings.html.
 # Note that all arguments are converted from camelCase to snake_case
 temporal_covariate_settings = {
-    'use_demographics_gender': True,
-    'use_demographics_age': True,
-    'use_demographics_age_group': True,
-    'use_demographics_race': True,
-    'use_demographics_ethnicity': True,
-    'use_demographics_index_year': True,
-    'use_demographics_index_month': True,
-    'use_demographics_index_year_month': True,
-    'use_demographics_prior_observation_time': True,
-    'use_demographics_post_observation_time': True,
-    'use_demographics_time_in_cohort': True,
-    'use_condition_occurrence': True,
-    'use_procedure_occurrence': True,
-    'use_drug_era_start': True,
-    'use_measurement': True,
-    'use_condition_era_start': True,
-    'use_condition_era_overlap': True,
-    'use_condition_era_group_start': False,  # do not use because https://github.com/ohdsi/feature_extraction/issues/144
-    'use_condition_era_group_overlap': True,
-    'use_drug_exposure': False,  # leads to too many concept id
-    'use_drug_era_overlap': False,
-    'use_drug_era_group_start': False,  # do not use because https://github.com/ohdsi/feature_extraction/issues/144
-    'use_drug_era_group_overlap': True,
-    'use_observation': True,
-    'use_visit_concept_count': True,
-    'use_visit_count': True,
-    'use_device_exposure': True,
-    'use_charlson_index': True,
-    'use_dcsi': True,
-    'use_chads2': True,
-    'use_chads2_vasc': True,
-    'use_hfrs': False,
-    'temporal_start_days': [
+    "use_demographics_gender": True,
+    "use_demographics_age": True,
+    "use_demographics_age_group": True,
+    "use_demographics_race": True,
+    "use_demographics_ethnicity": True,
+    "use_demographics_index_year": True,
+    "use_demographics_index_month": True,
+    "use_demographics_index_year_month": True,
+    "use_demographics_prior_observation_time": True,
+    "use_demographics_post_observation_time": True,
+    "use_demographics_time_in_cohort": True,
+    "use_condition_occurrence": True,
+    "use_procedure_occurrence": True,
+    "use_drug_era_start": True,
+    "use_measurement": True,
+    "use_condition_era_start": True,
+    "use_condition_era_overlap": True,
+    "use_condition_era_group_start": False,  # do not use because https://github.com/ohdsi/feature_extraction/issues/144
+    "use_condition_era_group_overlap": True,
+    "use_drug_exposure": False,  # leads to too many concept id
+    "use_drug_era_overlap": False,
+    "use_drug_era_group_start": False,  # do not use because https://github.com/ohdsi/feature_extraction/issues/144
+    "use_drug_era_group_overlap": True,
+    "use_observation": True,
+    "use_visit_concept_count": True,
+    "use_visit_count": True,
+    "use_device_exposure": True,
+    "use_charlson_index": True,
+    "use_dcsi": True,
+    "use_chads2": True,
+    "use_chads2_vasc": True,
+    "use_hfrs": False,
+    "temporal_start_days": [
         # components displayed in cohort characterization
         -9999,  # anytime prior
         -365,  # long term prior
@@ -63,9 +63,9 @@ temporal_covariate_settings = {
         0,  # index date only
         1,  # 1 day after to day 30
         31,
-        -9999  # any time prior to any time future
+        -9999,  # any time prior to any time future
     ],
-    'temporal_end_days': [
+    "temporal_end_days": [
         0,  # anytime prior
         0,  # long term prior
         0,  # medium term prior
@@ -76,23 +76,23 @@ temporal_covariate_settings = {
         0,  # index date only
         30,  # 1 day after to day 30
         365,
-        9999  # any time prior to any time future
-    ]
+        9999,  # any time prior to any time future
+    ],
 }
 
 # Execute cohort diagnostics settings
 # To see all the available options please refer to the documentation of the
 # OHDSI package: https://ohdsi.github.io/CohortDiagnostics/reference/executeDiagnostics.html
 diagnostics_settings = {
-    'run_inclusion_statistics': True,
-    'run_included_source_concepts': True,
-    'run_orphan_concepts': True,
-    'run_time_series': False,
-    'run_visit_context': True,
-    'run_breakdown_index_events': False,
-    'run_incidence_rate': True,
-    'run_cohort_relationship': True,
-    'run_temporal_cohort_characterization': True
+    "run_inclusion_statistics": True,
+    "run_included_source_concepts": True,
+    "run_orphan_concepts": True,
+    "run_time_series": False,
+    "run_visit_context": True,
+    "run_breakdown_index_events": False,
+    "run_incidence_rate": True,
+    "run_cohort_relationship": True,
+    "run_temporal_cohort_characterization": True,
 }
 
 # Create a new vantage6 task that executes the cohort diagnostics at all the
@@ -100,20 +100,20 @@ diagnostics_settings = {
 task = client.task.create(
     collaboration=1,
     organizations=[1],
-    name='omop-test',
-    description='@',
+    name="omop-test",
+    description="@",
     input_={
-        'method': 'central',
-        'kwargs': {
-            'cohort_definitions': omop_jsons,
-            'cohort_names': names,
-            'temporal_covariate_settings': temporal_covariate_settings,
-            'diagnostics_settings': diagnostics_settings,
-        }
+        "method": "central",
+        "kwargs": {
+            "cohort_definitions": omop_jsons,
+            "cohort_names": names,
+            "temporal_covariate_settings": temporal_covariate_settings,
+            "diagnostics_settings": diagnostics_settings,
+        },
     },
-    databases=[{'label': 'default'}],
-    image='omop-tester'
+    databases=[{"label": "default"}],
+    image="omop-tester",
 )
 
 # Obtain the results
-client.wait_for_results(task_id=task.get('id'))
+client.wait_for_results(task_id=task.get("id"))
