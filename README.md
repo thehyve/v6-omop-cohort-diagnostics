@@ -121,7 +121,7 @@ databases:
     # algorithms regard less of the data source the user specifies you can
     # use the `algorithm_env` setting.
     env:
-      username: admin@admin.com
+      user: admin@admin.com
       password: admin
       dbms: postgresql
       cdm_database: postgres
