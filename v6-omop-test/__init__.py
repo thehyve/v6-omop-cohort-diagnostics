@@ -15,7 +15,7 @@ from vantage6.algorithm.tools.decorators import (
     database_connection,
     metadata,
     RunMetaData,
-    OHDSIMetaData
+    OHDSIMetaData,
 )
 
 from ohdsi import circe
@@ -28,44 +28,86 @@ from rpy2.robjects import RS4
 
 
 @algorithm_client
-def central(client: AlgorithmClient, cohort_definitions: dict,
-            cohort_names: list[str], temporal_covariate_settings: dict,
-            diagnostics_settings: dict) -> list[pd.DataFrame]:
+def central(
+    client: AlgorithmClient,
+    cohort_definitions: dict,
+    cohort_names: list[str],
+    temporal_covariate_settings: dict,
+    diagnostics_settings: dict,
+    organizations_to_include="ALL",
+) -> list[pd.DataFrame]:
+    """
+    Executes the central algorithm on the specified client and returns the results.
 
-    info('Collecting participating organizations')
+    Parameters
+    ----------
+    client : AlgorithmClient
+        Interface to the central server. This is supplied by the wrapper.
+    cohort_definitions : dict
+        A dictionary containing the cohort definitions from ATLAS.
+    cohort_names : list[str]
+        A list of cohort names.
+    temporal_covariate_settings : dict
+        A dictionary containing the temporal covariate settings.
+    diagnostics_settings : dict
+        A dictionary containing the diagnostics settings.
+    organizations_to_include : str, optional
+        The organizations to include. Defaults to 'ALL'.
+
+    Returns
+    -------
+    list[pd.DataFrame]
+        A list of pandas DataFrames containing the results.
+    """
+    info("Collecting participating organizations")
+    # obtain organizations for which to run the algorithm
     organizations = client.organization.list()
-    ids = [org['id'] for org in organizations]
+    ids = [org["id"] for org in organizations]
+    if organizations_to_include != "ALL":
+        # check that organizations_to_include is a subset of ids, so we can return
+        # a nice error message. The server can also return an error, but this is
+        # more user friendly.
+        if not set(organizations_to_include).issubset(set(ids)):
+            return {
+                "msg": "You specified an organization that is not part of the "
+                "collaboration"
+            }
+        ids = organizations_to_include
 
     # This requests the cohort diagnostics to be computed on all nodes
-    info('Requesting partial computation')
+    info("Requesting partial computation")
     task = client.task.create(
         input_={
-            'method': 'cohort_diagnostics',
-            'kwargs': {
-                'cohort_definitions': cohort_definitions,
-                'cohort_names': cohort_names,
-                'temporal_covariate_settings': temporal_covariate_settings,
-                'diagnostics_settings': diagnostics_settings
-            }
+            "method": "cohort_diagnostics",
+            "kwargs": {
+                "cohort_definitions": cohort_definitions,
+                "cohort_names": cohort_names,
+                "temporal_covariate_settings": temporal_covariate_settings,
+                "diagnostics_settings": diagnostics_settings,
+            },
         },
-        organizations=ids
+        organizations=ids,
     )
     info(f'Task assigned, id: {task.get("id")}')
 
     # This function is blocking until the results from all nodes are in
-    info('Waiting for results')
-    all_results = client.wait_for_results(task_id=task['id'])
+    info("Waiting for results")
+    all_results = client.wait_for_results(task_id=task["id"])
 
-    info('Results received, sending them back to server')
+    info("Results received, sending them back to server")
     return all_results
 
 
 @metadata
 @database_connection(types=["OMOP"], include_metadata=True)
 def cohort_diagnostics(
-    connection: RS4, meta_omop: OHDSIMetaData, meta_run: RunMetaData,
-    cohort_definitions: dict, cohort_names: list[str],
-    temporal_covariate_settings: dict, diagnostics_settings: dict
+    connection: RS4,
+    meta_omop: OHDSIMetaData,
+    meta_run: RunMetaData,
+    cohort_definitions: dict,
+    cohort_names: list[str],
+    temporal_covariate_settings: dict,
+    diagnostics_settings: dict,
 ) -> pd.DataFrame:
     """Computes the OHDSI cohort diagnostics."""
 
@@ -73,25 +115,25 @@ def cohort_diagnostics(
     # The first six digits are the task id, the last three digits are the index
     # of the file.
     n = len(cohort_definitions)
+    cohort_ids = [
+        float(f"{meta_run.node_id}{meta_run.task_id:04d}{i:03d}") for i in range(0, n)
+    ]
+    info(f"cohort ids: {cohort_ids}")
 
     cohort_definition_set = pd.DataFrame(
         {
-            'cohortId': [
-                float(f'{meta_run.node_id}{meta_run.task_id:06d}{i:03d}')
-                for i in range(0, n)
-            ],
-            'cohortName': cohort_names,
-            'json': cohort_definitions,
-            'sql': [_create_cohort_query(cohort) for cohort in
-                    cohort_definitions],
-            'logicDescription': [None] * n,
-            'generateStats': [True] * n,
+            "cohortId": cohort_ids,
+            "cohortName": cohort_names,
+            "json": cohort_definitions,
+            "sql": [_create_cohort_query(cohort) for cohort in cohort_definitions],
+            "logicDescription": [None] * n,
+            "generateStats": [True] * n,
         }
     )
     info(f"Generated {n} cohort definitions")
 
     # Generate the table names for the cohort tables
-    cohort_table = f'cohort_{meta_run.task_id}_{meta_run.node_id}'
+    cohort_table = f"cohort_{meta_run.task_id}_{meta_run.node_id}"
     cohort_table_names = cohort_generator.get_cohort_table_names(cohort_table)
     info(f"Cohort table name: {cohort_table}")
     info(f"Tables: {cohort_table_names}")
@@ -101,7 +143,8 @@ def cohort_diagnostics(
     cohort_generator.create_cohort_tables(
         connection=connection,
         cohort_database_schema=meta_omop.results_schema,
-        cohort_table_names=cohort_table_names)
+        cohort_table_names=cohort_table_names,
+    )
     info("Created cohort tables")
 
     # Generate the cohort set
@@ -111,21 +154,21 @@ def cohort_diagnostics(
         cdm_database_schema=meta_omop.cdm_schema,
         cohort_database_schema=meta_omop.results_schema,
         cohort_table_names=cohort_table_names,
-        cohort_definition_set=cohort_definition_set
+        cohort_definition_set=cohort_definition_set,
     )
     info("Generated cohort set")
 
-    temporal_covariate_settings = \
-        feature_extraction.create_temporal_covariate_settings(
-            **temporal_covariate_settings)
+    temporal_covariate_settings = feature_extraction.create_temporal_covariate_settings(
+        **temporal_covariate_settings
+    )
     info("Created temporal covariate settings")
 
     ohdsi_cohort_diagnostics.execute_diagnostics(
         cohort_definition_set=cohort_definition_set,
-        export_folder=str(meta_omop.export_folder / 'exports'),
+        export_folder=str(meta_omop.export_folder / "exports"),
         database_id=meta_run.task_id,
         database_name=f"{meta_run.task_id:06d}",
-        database_description='todo',
+        database_description="todo",
         cohort_database_schema=meta_omop.results_schema,
         connection=connection,
         cdm_database_schema=meta_omop.cdm_schema,
@@ -143,8 +186,7 @@ def cohort_diagnostics(
     info("Executed diagnostics")
 
     # Read back the CSV file with the results
-    df = pd.read_csv(meta_omop.export_folder / 'exports' /
-                     "incidence_rate.csv")
+    df = pd.read_csv(meta_omop.export_folder / "exports" / "incidence_rate.csv")
 
     return df.to_json()
 
