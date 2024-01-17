@@ -10,6 +10,11 @@ ARG PKG_NAME="v6-omop-test"
 RUN Rscript -e "install.packages('scales')"
 RUN Rscript -e "install.packages('pool')"
 RUN Rscript -e "install.packages('later')"
+
+# TODO: remove me at release
+# RUN apt update && apt install -y git
+# RUN pip install --force-reinstall git+https://github.com/vantage6/vantage6@bugfix/some-minor-fixes#subdirectory=vantage6-algorithm-tools
+
 # install federated algorithm
 COPY . /app
 RUN pip install /app
