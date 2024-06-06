@@ -32,6 +32,7 @@ def central(
     client: AlgorithmClient,
     cohort_definitions: dict,
     cohort_names: list[str],
+    meta_cohorts: list[dict],
     temporal_covariate_settings: dict,
     diagnostics_settings: dict,
     organizations_to_include="ALL",
@@ -80,6 +81,7 @@ def central(
         input_={
             "method": "cohort_diagnostics",
             "kwargs": {
+                "meta_cohorts": meta_cohorts,
                 "cohort_definitions": cohort_definitions,
                 "cohort_names": cohort_names,
                 "temporal_covariate_settings": temporal_covariate_settings,
@@ -104,6 +106,7 @@ def cohort_diagnostics(
     connection: RS4,
     meta_omop: OHDSIMetaData,
     meta_run: RunMetaData,
+    meta_cohorts: list[dict],
     cohort_definitions: dict,
     cohort_names: list[str],
     temporal_covariate_settings: dict,
@@ -115,10 +118,19 @@ def cohort_diagnostics(
     # The first six digits are the task id, the last three digits are the index
     # of the file.
     n = len(cohort_definitions)
-    cohort_ids = [
-        float(f"{meta_run.node_id}{meta_run.task_id:04d}{i:03d}") for i in range(0, n)
-    ]
-    info(f"cohort ids: {cohort_ids}")
+    shared_ids = []
+    cohort_ids = []
+    for i in range(0, n):
+        # These are the IDs to be shared with the user and should be identical for all
+        # nodes that participate
+        task_id = meta_cohorts[0]['task_id']
+        temp_id = f"{task_id:04d}{i:03d}"
+        shared_ids.append(temp_id)
+        # The node id is appended at runtim by the node itself
+        cohort_ids.append(float(f"{meta_run.node_id}{temp_id}"))
+
+    info(f"Full local cohort ids: {cohort_ids}")
+    info(f"Shared cohort ids: {shared_ids}")
 
     cohort_definition_set = pd.DataFrame(
         {
@@ -133,41 +145,22 @@ def cohort_diagnostics(
     info(f"Generated {n} cohort definitions")
 
     # Generate the table names for the cohort tables
-    cohort_table = f"cohort_{meta_run.task_id}_{meta_run.node_id}"
+    cohort_table = f"cohort_{task_id}_{meta_run.node_id}"
     cohort_table_names = cohort_generator.get_cohort_table_names(cohort_table)
     info(f"Cohort table name: {cohort_table}")
     info(f"Tables: {cohort_table_names}")
-
-    # Create the tables in the database
-    info(f"OMOP results schema: {meta_omop.results_schema}")
-    cohort_generator.create_cohort_tables(
-        connection=connection,
-        cohort_database_schema=meta_omop.results_schema,
-        cohort_table_names=cohort_table_names,
-    )
-    info("Created cohort tables")
-
-    # Generate the cohort set
-    cohort_definition_set = ohdsi_common.convert_to_r(cohort_definition_set)
-    cohort_generator.generate_cohort_set(
-        connection=connection,
-        cdm_database_schema=meta_omop.cdm_schema,
-        cohort_database_schema=meta_omop.results_schema,
-        cohort_table_names=cohort_table_names,
-        cohort_definition_set=cohort_definition_set,
-    )
-    info("Generated cohort set")
 
     temporal_covariate_settings = feature_extraction.create_temporal_covariate_settings(
         **temporal_covariate_settings
     )
     info("Created temporal covariate settings")
 
+    database_name = f"{meta_run.task_id:06d}"
     ohdsi_cohort_diagnostics.execute_diagnostics(
         cohort_definition_set=cohort_definition_set,
         export_folder=str(meta_omop.export_folder / "exports"),
-        database_id=meta_run.task_id,
-        database_name=f"{meta_run.task_id:06d}",
+        database_id=task_id,
+        database_name=database_name,
         database_description="todo",
         cohort_database_schema=meta_omop.results_schema,
         connection=connection,
@@ -185,10 +178,12 @@ def cohort_diagnostics(
     )
     info("Executed diagnostics")
 
-    # Read back the CSV file with the results
-    df = pd.read_csv(meta_omop.export_folder / "exports" / "incidence_rate.csv")
+    # Read back the zip file with results
+    file_ = meta_omop.export_folder / "exports" / f"Results_{database_name}.zip"
+    with open(file_, 'rb') as f:
+        contents = f.read()
 
-    return df.to_json()
+    return contents
 
 
 def _create_cohort_query(cohort_definition: dict) -> str:
