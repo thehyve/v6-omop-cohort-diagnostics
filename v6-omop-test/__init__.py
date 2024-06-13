@@ -6,6 +6,7 @@ like any other method.
 The results in a return statement are sent to the central vantage6 server after
 encryption (if that is enabled for the collaboration).
 """
+import base64
 import pandas as pd
 
 from vantage6.algorithm.tools.util import info
@@ -35,6 +36,7 @@ def central(
     meta_cohorts: list[dict],
     temporal_covariate_settings: dict,
     diagnostics_settings: dict,
+    min_cell_count=5,
     organizations_to_include="ALL",
 ) -> list[pd.DataFrame]:
     """
@@ -86,6 +88,7 @@ def central(
                 "cohort_names": cohort_names,
                 "temporal_covariate_settings": temporal_covariate_settings,
                 "diagnostics_settings": diagnostics_settings,
+                "min_cell_count": min_cell_count,
             },
         },
         organizations=ids,
@@ -111,6 +114,7 @@ def cohort_diagnostics(
     cohort_names: list[str],
     temporal_covariate_settings: dict,
     diagnostics_settings: dict,
+    min_cell_count: int
 ) -> pd.DataFrame:
     """Computes the OHDSI cohort diagnostics."""
 
@@ -142,6 +146,7 @@ def cohort_diagnostics(
             "generateStats": [True] * n,
         }
     )
+    cohort_definition_set = ohdsi_common.convert_to_r(cohort_definition_set)
     info(f"Generated {n} cohort definitions")
 
     # Generate the table names for the cohort tables
@@ -171,17 +176,18 @@ def cohort_diagnostics(
         cohort_ids=None,
         cdm_version=5,
         temporal_covariate_settings=temporal_covariate_settings,
-        **diagnostics_settings
-        # min_cell_count=min_cell_count,
+        **diagnostics_settings,
+        min_cell_count=min_cell_count,
         # incremental=False, #default was True
         # incremental_folder=my_params['incremental_folder']
     )
     info("Executed diagnostics")
 
     # Read back the zip file with results
-    file_ = meta_omop.export_folder / "exports" / f"Results_{database_name}.zip"
+    file_ = meta_omop.export_folder / "exports" / f"Results_{task_id}.zip"
     with open(file_, 'rb') as f:
         contents = f.read()
+    contents = base64.b64encode(contents).decode("UTF-8")
 
     return contents
 
