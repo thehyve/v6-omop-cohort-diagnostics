@@ -1,6 +1,9 @@
-# basic python3 image as base
-#FROM harbor2.vantage6.ai/infrastructure/algorithm-base
-FROM harbor2.vantage6.ai/infrastructure/algorithm-ohdsi-base:4.3
+ARG BASE=4.5
+FROM harbor2.vantage6.ai/infrastructure/algorithm-ohdsi-base:${BASE}
+
+LABEL version=${TAG}
+LABEL maintainer="F.C. Martin <f.martin@iknl.nl>"
+LABEL maintainer="A.J. van Gestel <a.vangestel@iknl.nl>"
 
 # This is a placeholder that should be overloaded by invoking
 # docker build with '--build-arg PKG_NAME=...'
