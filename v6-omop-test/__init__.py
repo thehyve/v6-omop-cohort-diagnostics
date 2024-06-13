@@ -8,6 +8,7 @@ encryption (if that is enabled for the collaboration).
 """
 import base64
 import pandas as pd
+import json
 
 from vantage6.algorithm.tools.util import info, get_env_var
 from vantage6.algorithm.tools.decorators import (
@@ -133,6 +134,9 @@ def cohort_diagnostics(
 
     info(f"Full local cohort ids: {cohort_ids}")
     info(f"Shared cohort ids: {shared_ids}")
+
+    if isinstance(cohort_definitions, dict):
+        cohort_definitions = json.dumps(cohort_definitions)
 
     cohort_definition_set = pd.DataFrame(
         {
