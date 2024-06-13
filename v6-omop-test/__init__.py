@@ -9,7 +9,7 @@ encryption (if that is enabled for the collaboration).
 import base64
 import pandas as pd
 
-from vantage6.algorithm.tools.util import info
+from vantage6.algorithm.tools.util import info, get_env_var
 from vantage6.algorithm.tools.decorators import (
     algorithm_client,
     AlgorithmClient,
@@ -26,6 +26,7 @@ from ohdsi import feature_extraction
 from ohdsi import cohort_diagnostics as ohdsi_cohort_diagnostics
 
 from rpy2.robjects import RS4
+from .globals import DEFAULT_CD_MIN_RECORDS
 
 
 @algorithm_client
@@ -36,7 +37,6 @@ def central(
     meta_cohorts: list[dict],
     temporal_covariate_settings: dict,
     diagnostics_settings: dict,
-    min_cell_count=5,
     organizations_to_include="ALL",
 ) -> list[pd.DataFrame]:
     """
@@ -87,8 +87,7 @@ def central(
                 "cohort_definitions": cohort_definitions,
                 "cohort_names": cohort_names,
                 "temporal_covariate_settings": temporal_covariate_settings,
-                "diagnostics_settings": diagnostics_settings,
-                "min_cell_count": min_cell_count,
+                "diagnostics_settings": diagnostics_settings
             },
         },
         organizations=ids,
@@ -106,15 +105,14 @@ def central(
 @metadata
 @database_connection(types=["OMOP"], include_metadata=True)
 def cohort_diagnostics(
-    connection: RS4,
+    connection: RS4, 
     meta_omop: OHDSIMetaData,
     meta_run: RunMetaData,
     meta_cohorts: list[dict],
     cohort_definitions: dict,
     cohort_names: list[str],
     temporal_covariate_settings: dict,
-    diagnostics_settings: dict,
-    min_cell_count: int
+    diagnostics_settings: dict
 ) -> pd.DataFrame:
     """Computes the OHDSI cohort diagnostics."""
 
@@ -160,6 +158,10 @@ def cohort_diagnostics(
     )
     info("Created temporal covariate settings")
 
+    # Privacy guards
+    min_cell_count = get_env_var("CD_MIN_RECORDS", DEFAULT_CD_MIN_RECORDS, as_type="int")
+
+    # Execute diagnostics
     database_name = f"{meta_run.task_id:06d}"
     ohdsi_cohort_diagnostics.execute_diagnostics(
         cohort_definition_set=cohort_definition_set,
