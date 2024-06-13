@@ -135,7 +135,7 @@ def cohort_diagnostics(
     info(f"Full local cohort ids: {cohort_ids}")
     info(f"Shared cohort ids: {shared_ids}")
 
-    if isinstance(cohort_definitions, dict):
+    if isinstance(cohort_definitions, list):
         cohort_definitions = json.dumps(cohort_definitions)
 
     cohort_definition_set = pd.DataFrame(
