@@ -9,16 +9,11 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
-# # read the API version from disk
-# with open(path.join(here, 'vantage6', 'tools', 'VERSION')) as fp:
-#     __version__ = fp.read()
-
 # setup the package
-# TODO the ohdsi tools need to be installed in the wrapper
 setup(
-    name="v6-omop-test",
+    name="v6-omop-cohort-diagnostics",
     version="1.0.0",
-    description="vantage6 omop test algorithm",
+    description="vantage6 omop Cohort Diagnostics",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="",
@@ -34,12 +29,4 @@ setup(
         "ohdsi-cohort-diagnostics",
         "ohdsi-common",
     ],
-    # ,
-    # extras_require={
-    # },
-    # package_data={
-    #     'vantage6.tools': [
-    #         'VERSION'
-    #     ],
-    # }
 )

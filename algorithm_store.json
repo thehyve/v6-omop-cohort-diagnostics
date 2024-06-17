@@ -4,7 +4,7 @@
     "vantage6_version": "4.5",
     "functions": [
       {
-        "name": "central",
+        "name": "cohort_diagnostics_central",
         "databases": [
           {
             "name": "Database",
@@ -19,9 +19,14 @@
             "name": "cohort_definitions"
           },
           {
-            "type": "string",
+            "type": "string_list",
             "description": "The cohort names.",
             "name": "cohort_names"
+          },
+          {
+            "type": "json",
+            "description": "The meta cohorts output.",
+            "name": "meta_cohorts"
           },
           {
             "type": "json",
@@ -44,5 +49,5 @@
       }
     ],
     "description": "Create a cohort diagnostics report for a set of cohorts.",
-    "image": "harbor2.vantage6.ai/blueberry/v6-omop-cohort-diagnostics"
+    "image": "harbor2.vantage6.ai/blueberry/omop-cohort-diagnostics"
   }
