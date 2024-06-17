@@ -12,12 +12,28 @@
 # v6-omop-test
 This algorithm is part of the [vantage6](https://vantage6.ai) solution.
 Vantage6 allows to execute computations on federated datasets. This repository
-contains an example OMOP algorithm that computes the cohort
+contains the [OHDSI Cohort Diagnostics](https://ohdsi.github.io/CohortDiagnostics/)
+algorithm.
+
+This package has been developed in context of the
+[BlueBerry](https://euracan.eu/registries/blueberry/) project.
 
 ## Algorithm overview
 <p align="center">
     <img src="img/cohort_diagnostics.png" alt="algorithm overview">
 </p>
+
+## Privacy Gaurds
+
+### Minimum cell count
+The minimum cell count for fields contains person counts or fractions. This is identical to the `minCellCount` parameter in the OHDSI package. You can set it using `CD_MIN_RECORDS`.
+
+## Build
+In order to build its best to use the makefile.
+
+```bash
+make image VANTAGE6_VERSION=4.5.3
+```
 
 ## Node configuration
 In order for this algorithm to run the vantage6 node needs to be properly
