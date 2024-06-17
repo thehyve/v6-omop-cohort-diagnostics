@@ -9,7 +9,7 @@
 
 --------------------
 
-# v6-omop-test
+# OMOP Cohort Diagnostics
 This algorithm is part of the [vantage6](https://vantage6.ai) solution.
 Vantage6 allows to execute computations on federated datasets. This repository
 contains the [OHDSI Cohort Diagnostics](https://ohdsi.github.io/CohortDiagnostics/)
