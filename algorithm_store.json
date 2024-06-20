@@ -14,7 +14,7 @@
         "ui_visualizations": [],
         "arguments": [
           {
-            "type": "json",
+            "type": "string",
             "description": "The cohort definitions to use for the analysis.",
             "name": "cohort_definitions"
           },
