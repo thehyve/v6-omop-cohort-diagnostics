@@ -188,7 +188,11 @@ def cohort_diagnostics(
     info("Executed diagnostics")
 
     # Read back the zip file with results
-    file_ = meta_omop.export_folder / "exports" / f"Results_{task_id}.zip"
+    file_ = (
+        meta_omop.export_folder
+        / "exports"
+        / f"Results_task_{task_id}_org_{meta_run.organization_id}.zip"
+    )
     with open(file_, "rb") as f:
         contents = f.read()
     contents = base64.b64encode(contents).decode("UTF-8")
