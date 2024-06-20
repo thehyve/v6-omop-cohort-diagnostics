@@ -38,7 +38,6 @@ def cohort_diagnostics_central(
     meta_cohorts: list[dict],
     temporal_covariate_settings: dict,
     diagnostics_settings: dict,
-    min_cell_count=5,
     organizations_to_include="ALL",
 ) -> list[pd.DataFrame]:
     """
@@ -90,7 +89,6 @@ def cohort_diagnostics_central(
                 "cohort_names": cohort_names,
                 "temporal_covariate_settings": temporal_covariate_settings,
                 "diagnostics_settings": diagnostics_settings,
-                "min_cell_count": min_cell_count,
             },
         },
         organizations=ids,

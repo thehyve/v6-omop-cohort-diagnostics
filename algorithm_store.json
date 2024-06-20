@@ -7,7 +7,7 @@
         "name": "cohort_diagnostics_central",
         "databases": [
           {
-            "name": "Database",
+            "name": "OMOP CDM Database",
             "description": "Database to use for the OHDSI Cohort Diagnostics"
           }
         ],
