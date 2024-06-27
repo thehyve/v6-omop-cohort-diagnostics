@@ -164,8 +164,8 @@ def cohort_diagnostics(
         "CD_MIN_RECORDS", DEFAULT_CD_MIN_RECORDS, as_type="int"
     )
 
-    database_id = f"{meta_run.task_id:06d}_{meta_run.node_id}"
-    database_name = f"Node_{meta_run.node_id}"
+    database_id = f"{meta_run.task_id:06d}__{meta_run.organization_id}_{meta_run.node_id}"
+    database_name = f"Node_{meta_run.organization_id}"
     ohdsi_cohort_diagnostics.execute_diagnostics(
         cohort_definition_set=cohort_definition_set,
         export_folder=str(meta_omop.export_folder / "exports"),
