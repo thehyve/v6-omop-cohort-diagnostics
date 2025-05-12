@@ -1,7 +1,5 @@
-VANTAGE6_VERSION ?= 4.0.0
-TAG ?= cotopaxi
-REGISTRY ?= harbor2.vantage6.ai
-REGISTRY_PROJECT ?= blueberry
+VANTAGE6_VERSION ?= 4.10.2
+REGISTRY ?= registry.vantage6.local
 PLATFORMS ?= linux/amd64
 TAG ?= =latest
 BASE ?= 4.5
@@ -22,20 +20,20 @@ help:
 	@echo "  make image     - build the image"
 	@echo ""
 	@echo "Using "
-	@echo "  registry:  ${REGISTRY}/${REGISTRY_PROJECT}"
+	@echo "  registry:  ${REGISTRY}"
 	@echo "  image:     ${IMAGE}"
-	@echo "  tag:       ${TAG}-v6-${VANTAGE6_VERSION}"
+	@echo "  tag:       v6-${VANTAGE6_VERSION}"
 	@echo "  base:      ${BASE}"
 	@echo "  platforms: ${PLATFORMS}"
 	@echo "  vantage6:  ${VANTAGE6_VERSION}"
 	@echo ""
 
 image:
-	@echo "Building ${REGISTRY}/${REGISTRY_PROJECT}/${IMAGE}:${TAG}-v6-${VANTAGE6_VERSION}"
-	@echo "Building ${REGISTRY}/${REGISTRY_PROJECT}/${IMAGE}:latest"
+	@echo "Building ${REGISTRY}/${IMAGE}:v6-${VANTAGE6_VERSION}"
+	@echo "Building ${REGISTRY}/${IMAGE}:latest"
 	docker buildx build \
-		--tag ${REGISTRY}/${REGISTRY_PROJECT}/${IMAGE}:${TAG}-v6-${VANTAGE6_VERSION} \
-		--tag ${REGISTRY}/${REGISTRY_PROJECT}/${IMAGE}:latest \
+		--tag ${REGISTRY}/${IMAGE}:v6-${VANTAGE6_VERSION} \
+		--tag ${REGISTRY}/${IMAGE}:latest \
 		--platform ${PLATFORMS} \
 		--build-arg TAG=${TAG} \
 		--build-arg BASE=${BASE} \
