@@ -2,15 +2,15 @@ from pathlib import Path
 from vantage6.client import Client
 
 # Authenticate to the vantage6 server
-client = Client("http://127.0.0.1", 5000, "/api", log_level="debug")
-client.authenticate("org_1-admin", "password")
+client = Client("https://vantage6.local", 443, "/server/api", log_level="debug")
+client.authenticate("user1", "User1User1!")
 client.setup_encryption(None)
 
 # Load the cohort definitions from a folder. These can be created using the
 # ATLAS tool
 folder_ = Path(r"./cohort_definitions/")
 files = list(folder_.glob("*.json"))
-omop_jsons = [(folder_ / file_).read_text() for file_ in files]
+omop_jsons = [(file_).read_text() for file_ in files]
 names = [file_.stem for file_ in files]
 
 
@@ -97,22 +97,24 @@ diagnostics_settings = {
 
 # Create a new vantage6 task that executes the cohort diagnostics at all the
 # nodes that are part of the collaboration.
+print(f"names: {names}");
 task = client.task.create(
     collaboration=1,
-    organizations=[1],
+    organizations=[2],
     name="omop-test",
     description="@",
     input_={
-        "method": "central",
+        "method": "cohort_diagnostics_central",
         "kwargs": {
             "cohort_definitions": omop_jsons,
             "cohort_names": names,
             "temporal_covariate_settings": temporal_covariate_settings,
             "diagnostics_settings": diagnostics_settings,
+            "meta_cohorts": [{"task_id": 13}],
         },
     },
-    databases=[{"label": "default"}],
-    image="omop-tester",
+    databases=[{"label": "omop"}],
+    image="registry.vantage6.local/omop-cohort-diagnostics",
 )
 
 # Obtain the results
