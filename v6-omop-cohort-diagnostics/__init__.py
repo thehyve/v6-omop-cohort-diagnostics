@@ -25,6 +25,7 @@ from ohdsi import cohort_generator
 from ohdsi import common as ohdsi_common
 from ohdsi import feature_extraction
 from ohdsi import cohort_diagnostics as ohdsi_cohort_diagnostics
+from ohdsi import cohort_generator as ohdsi_cohort_generator
 
 from rpy2.robjects import RS4
 from .globals import DEFAULT_CD_MIN_RECORDS
@@ -153,6 +154,12 @@ def cohort_diagnostics(
     cohort_table_names = cohort_generator.get_cohort_table_names(cohort_table)
     info(f"Cohort table name: {cohort_table}")
     info(f"Tables: {cohort_table_names}")
+
+    info("(re-)creating cohort tables")
+    ohdsi_cohort_generator.create_cohort_tables(
+        cohort_database_schema=meta_omop.results_schema,
+        connection=connection,
+        cohort_table_names=cohort_table_names)
 
     temporal_covariate_settings = feature_extraction.create_temporal_covariate_settings(
         **temporal_covariate_settings
