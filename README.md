@@ -22,6 +22,10 @@ This package has been developed in context of the
 Please note: this version was adapted for use with a custom installation of Vantage6 (see the [Vantage6 deployment project](https://github.com/thehyve/vantage6-deployment).
 For this installation, the notes below may apply.
 
+### vantage6 server API & credentials in `client.py`
+By default, the `client.py` scripts connects to the Vantage6 server instance as created by the test script in the [Vantage6 deployment project](https://github.com/thehyve/vantage6-deployment).
+The server and related settings can be overridden by the following environment variables: `V6_API_URL, V6_API_PORT, V6_API_PATH, V6_API_USER, V6_API_PASSWORD`
+
 ### Self-signed certificates
 If you want to start this algorithm by running `client.py` and your installation uses self-signed certificates, you need to make sure the environment variable `REQUESTS_CA_BUNDLE`
 points to your certificate file, e.g. `export REQUESTS_CA_BUNDLE=/home/usr/path/to/cert.pem`
