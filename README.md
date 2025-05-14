@@ -18,6 +18,22 @@ algorithm.
 This package has been developed in context of the
 [BlueBerry](https://euracan.eu/registries/blueberry/) project.
 
+## Adapted implementation
+Please note: this version was adapted for use with a custom installation of Vantage6 (see the [Vantage6 deployment project](https://github.com/thehyve/vantage6-deployment).
+For this installation, the notes below may apply.
+
+### Self-signed certificates
+If you want to start this algorithm by running `client.py` and your installation uses self-signed certificates, you need to make sure the environment variable `REQUESTS_CA_BUNDLE`
+points to your certificate file, e.g. `export REQUESTS_CA_BUNDLE=/home/usr/path/to/cert.pem`
+
+### Collaboration, organizations
+Make sure that the collaboration and organization ids in `client.py` match your configuration:
+```python
+task = client.task.create(
+    collaboration=1,
+    organizations=[2],
+```
+
 ## Algorithm overview
 <p align="center">
     <img src="img/cohort_diagnostics.png" alt="algorithm overview">
@@ -32,7 +48,7 @@ The minimum cell count for fields contains person counts or fractions. This is i
 In order to build its best to use the makefile.
 
 ```bash
-make image VANTAGE6_VERSION=4.5.3
+make image VANTAGE6_VERSION=4.10.2
 ```
 
 ## Node configuration

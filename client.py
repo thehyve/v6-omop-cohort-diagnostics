@@ -1,9 +1,16 @@
+import os
 from pathlib import Path
 from vantage6.client import Client
 
 # Authenticate to the vantage6 server
-client = Client("https://vantage6.local", 443, "/server/api", log_level="debug")
-client.authenticate("user1", "User1User1!")
+# defaults are for local setup, overrule by env.vars
+v6_api_url = os.getenv("V6_API_URL", "https://vantage6.local")
+v6_api_port = os.getenv("V6_API_PORT", "443")
+v6_api_path = os.getenv("V6_API_PATH", "/server/api")
+v6_api_user = os.getenv("V6_API_USER", "user1")
+v6_api_password = os.getenv("V6_API_PASSWORD", "User1User1!")
+client = Client(v6_api_url, v6_api_port, v6_api_path, log_level="debug")
+client.authenticate(v6_api_user, v6_api_password)
 client.setup_encryption(None)
 
 # Load the cohort definitions from a folder. These can be created using the
@@ -97,7 +104,6 @@ diagnostics_settings = {
 
 # Create a new vantage6 task that executes the cohort diagnostics at all the
 # nodes that are part of the collaboration.
-print(f"names: {names}");
 task = client.task.create(
     collaboration=1,
     organizations=[2],
