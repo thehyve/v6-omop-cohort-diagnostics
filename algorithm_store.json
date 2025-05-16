@@ -49,5 +49,6 @@
       }
     ],
     "description": "Create a cohort diagnostics report for a set of cohorts.",
-    "image": "registry.vantage6.local/omop-cohort-diagnostics"
+    "image": "registry.vantage6.local/omop-cohort-diagnostics",
+    "code_url": "https://github.com/thehyve/v6-omop-cohort-diagnostics"
   }
