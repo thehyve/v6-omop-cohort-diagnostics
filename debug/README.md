@@ -40,7 +40,7 @@ When the algorithm is now started, this results in container 1. and 2. starting 
 
 ## Actual debugging of R code
 
-What currently works is starting the R command line browser by inserting `browser()` statements in de R code and rebuilding the container, and running the algorithm using the steps described above.
+What currently works is starting the R command line debugger by inserting `browser()` statements in de R code and rebuilding the container, and running the algorithm using the steps described above. [Documentation of the R command line debugger](https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/browser).
 
 Still under investigation: using a fancy debugger like VSCode or PyCharm.
 
