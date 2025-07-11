@@ -9,6 +9,8 @@ This directory contains a Dockerfile that created a debug version of the algorit
 
 To build, push and pubish the container in the local Vantage6 deployment, run `make publish`. If not already present, this will checkout a local copy of the OHDSI CohortDiagnostics package, where you can insert debug/print statements. Mind that this local copy is in `.gitignore`, so if you ever need to save code from there, you need to do that manually.
 
+The directory further contains an adapted version of `client.py` that starts the debug version of the algorithm, and copies of some files used by `client.py`.
+
 ## How this is supposed to work
 
 A normal run of an algorithm container is completely "invisible". When an algorithm is started, e.g by running `python client.py`, a set of 4 containers is started:
