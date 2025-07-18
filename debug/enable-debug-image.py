@@ -116,7 +116,8 @@ def invalidateIfExists(session, endpoint, data={}, params=""):
 
         return response.json()
     else:
-        return response.json()['data'][0]
+        print(f"no algorithm found, nothing to invalidate")
+        return response.json()
 
 def set_api_key(api_key, filename):
     with in_place.InPlace(filename) as file:
