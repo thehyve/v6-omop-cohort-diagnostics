@@ -1,2 +1,4 @@
 CohortDiagnostics/
+CohortGenerator/
+FeatureExtraction/
 __pycache__/

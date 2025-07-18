@@ -11,6 +11,12 @@ To build, push and pubish the container in the local Vantage6 deployment, run `m
 
 The directory further contains an adapted version of `client.py` that starts the debug version of the algorithm, and copies of some files used by `client.py`.
 
+## Short workflow for debugging
+
+1. Adapt R code, probably by inserting `browser()` statements
+2. run `make publish` - this will build a new debug container and enable it in Vantage6
+3. run `./startDebug.sh` - this should eventually bring you to the point where you inserted the `browser()` statement
+
 ## How this is supposed to work
 
 A normal run of an algorithm container is completely "invisible". When an algorithm is started, e.g by running `python client.py`, a set of 4 containers is started:
@@ -48,3 +54,10 @@ Still under investigation: using a fancy debugger like VSCode or PyCharm.
 
 Ataching VSCode to a running container, and attaching the R Debugger in VSCode to the running algorithm can already be done, but actually stepping through the code and inspecting variables does not work yet.
 TODO: describe the VSCode setup so far (janblom)
+
+## Notes on debug results
+
+# newer versions of OHDSI packages (CohortDiagnostics, FeatureExtraction, ...)
+
+When trying this, there are errors that point to the parameters passed in not having the right format. Solving one (by hacking in a value that is accepted, but makes no sense) just leads to another
+error concerning the parameters.

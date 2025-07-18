@@ -1,5 +1,6 @@
 import requests, sys, subprocess, os
 import in_place, re
+import urllib
 from operator import itemgetter
 
 from JWTAuth import JWTAuth
@@ -89,9 +90,31 @@ def createIfNotExists(session, endpoint, data={}, params=""):
         if response.status_code not in {200, 201}:
             print(f"response.status_code {response.status_code} ({response.text}) for post {endpoint} with {data}, but 200 (Ok) or 201 (Created) was expected")
             sys.exit(1)
-    
+
         return response.json()
-    
+    else:
+        return response.json()['data'][0]
+
+def invalidateIfExists(session, endpoint, data={}, params=""):
+    getUrl = f"{session.url}/{endpoint}"
+    if len(params) > 0:
+        getUrl += f"?{params}"
+    print(f"getUrl: {getUrl}")
+    response = session.get(getUrl, json=data)
+
+    if response.status_code != 200:
+        print(f"{response.status_code} ({response.text}) for get on {getUrl}")
+        sys.exit(1)
+        
+    if len(response.json()['data']) != 0:            
+        print(f"found algorithm, will invalidate using {session.url}{endpoint}/{response.json()['data'][0]['id']}/invalidate")
+        response = session.post(f"{session.url}{endpoint}/{response.json()['data'][0]['id']}/invalidate", json=data)
+        
+        if response.status_code not in {200, 201}:
+            print(f"response.status_code {response.status_code} ({response.text}) for post {endpoint} with {data}, but 200 (Ok) or 201 (Created) was expected")
+            sys.exit(1)
+
+        return response.json()
     else:
         return response.json()['data'][0]
 
@@ -123,7 +146,7 @@ store_session.url = API_STORE_URL
 # verify access to the server API
 response = get(server_session, '/user')
 
-# 2. create organization and collaboration
+# 2. get/create organization and collaboration
 test_org = createIfNotExists(server_session, "/organization", data={'name': 'TestOrg'}, params='name=TestOrg')
 
 test_collab = createIfNotExists(server_session, "/collaboration", 
@@ -190,6 +213,8 @@ registered_reviewer = createIfNotExists(store_session, '/user', data={
         'username': 'user1'
     }, params="username=user1")
 
+invalidateIfExists(store_session, '/algorithm', params=f"name={urllib.parse.quote_plus('OMOP Cohort diagnostics (debug)')}")
+
 pending_algorithm = createIfNotExists(store_session, '/algorithm', data={
   "name": "OMOP Cohort diagnostics (debug)",
   "description": "Debig version of OMOP Cohort Diagnostics",
@@ -253,5 +278,3 @@ review = createIfNotExists(store_session, '/review', data={
 
 store_session.auth = jwt_server_auth_user1
 approval = post(store_session, f"/review/{review['id']}/approve")
-
-print("hold it!")
