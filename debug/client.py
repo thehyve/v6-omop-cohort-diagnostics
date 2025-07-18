@@ -58,35 +58,33 @@ temporal_covariate_settings = {
     "use_chads2": True,
     "use_chads2_vasc": True,
     "use_hfrs": False,
-    "temporal_start_days": -365,
-    "temporal_end_days": 1,
-#    "temporal_start_days": [
-#        # components displayed in cohort characterization
-#        -9999,  # anytime prior
-#        -365,  # long term prior
-#        -180,  # medium term prior
-#        -30,  # short term prior
-#        # components displayed in temporal characterization
-#        -365,  # one year prior to -31
-#        -30,  # 30 day prior not including day 0
-#        0,  # index date only
-#        1,  # 1 day after to day 30
-#        31,
-#        -9999,  # any time prior to any time future
-#    ],
-#    "temporal_end_days": [
-#        0,  # anytime prior
-#        0,  # long term prior
-#        0,  # medium term prior
-#        0,  # short term prior
-#        # components displayed in temporal characterization
-#        -31,  # one year prior to -31
-#        -1,  # 30 day prior not including day 0
-#        0,  # index date only
-#        30,  # 1 day after to day 30
-#        365,
-#        9999,  # any time prior to any time future
-#    ],
+    "temporal_start_days": [
+        # components displayed in cohort characterization
+        -9999,  # anytime prior
+        -365,  # long term prior
+        -180,  # medium term prior
+        -30,  # short term prior
+        # components displayed in temporal characterization
+        -365,  # one year prior to -31
+        -30,  # 30 day prior not including day 0
+        0,  # index date only
+        1,  # 1 day after to day 30
+        31,
+        -9999,  # any time prior to any time future
+    ],
+    "temporal_end_days": [
+        0,  # anytime prior
+        0,  # long term prior
+        0,  # medium term prior
+        0,  # short term prior
+        # components displayed in temporal characterization
+        -31,  # one year prior to -31
+        -1,  # 30 day prior not including day 0
+        0,  # index date only
+        30,  # 1 day after to day 30
+        365,
+        9999,  # any time prior to any time future
+    ],
 }
 
 # Execute cohort diagnostics settings
