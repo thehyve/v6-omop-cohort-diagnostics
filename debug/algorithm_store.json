@@ -1,0 +1,54 @@
+{
+    "name": "OMOP Cohort Diagnostics (debug)",
+    "partitioning": "horizontal",
+    "vantage6_version": "4.5",
+    "functions": [
+      {
+        "name": "cohort_diagnostics_central",
+        "databases": [
+          {
+            "name": "OMOP CDM Database",
+            "description": "Database to use for the OHDSI Cohort Diagnostics"
+          }
+        ],
+        "ui_visualizations": [],
+        "arguments": [
+          {
+            "type": "string",
+            "description": "The cohort definitions to use for the analysis.",
+            "name": "cohort_definitions"
+          },
+          {
+            "type": "string_list",
+            "description": "The cohort names.",
+            "name": "cohort_names"
+          },
+          {
+            "type": "json",
+            "description": "The meta cohorts output.",
+            "name": "meta_cohorts"
+          },
+          {
+            "type": "json",
+            "description": "The settings for the temporal covariate analysis.",
+            "name": "temporal_covariate_settings"
+          },
+          {
+            "name": "diagnostics_settings",
+            "type": "json",
+            "description": "The settings for the diagnostics."
+          },
+          {
+            "name": "organizations_to_include",
+            "type": "organization_list",
+            "description": "The organizations to include in the analysis."
+          }
+        ],
+        "description": "Create a cohort diagnostics report for a set of cohorts.",
+        "type": "central"
+      }
+    ],
+    "description": "Create a cohort diagnostics report for a set of cohorts.",
+    "image": "registry.vantage6.local/omop-cohort-diagnostics-debug",
+    "code_url": "https://github.com/thehyve/v6-omop-cohort-diagnostics"
+  }

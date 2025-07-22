@@ -161,6 +161,14 @@ def cohort_diagnostics(
         connection=connection,
         cohort_table_names=cohort_table_names)
 
+    info("generating cohort set")
+    ohdsi_cohort_generator.generate_cohort_set(
+        cdm_database_schema="omopcdm_synthetic",
+        cohort_definition_set=cohort_definition_set,
+        connection=connection,
+        cohort_database_schema="results_synthetic",
+        cohort_table_names=cohort_table_names)
+
     temporal_covariate_settings = feature_extraction.create_temporal_covariate_settings(
         **temporal_covariate_settings
     )
