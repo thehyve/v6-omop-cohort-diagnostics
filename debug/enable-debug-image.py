@@ -5,28 +5,28 @@ from operator import itemgetter
 
 from JWTAuth import JWTAuth
 
+v6_api_host = os.getenv('V6_API_URL', 'https://vantage6.local')
+v6_api_url = v6_api_host + '/server/api'
+v6_store_host = os.getenv('V6_STORE_URL', 'https://vantage6.local')
+v6_store_url = v6_store_host + '/store/api'
 
-#API_SERVER_HOST = 'http://172.17.0.1:7601'
-API_SERVER_HOST = 'https://vantage6.local'
-API_SERVER_URL = API_SERVER_HOST + '/server/api'
-#API_STORE_HOST = 'http://172.17.0.1:7602'
-API_STORE_HOST = 'https://vantage6.local'
-API_STORE_URL = API_STORE_HOST + '/store/api'
+v6_api_user = os.getenv("V6_API_USER", "user1")
+v6_api_password = os.getenv("V6_API_PASSWORD", "User1User1!")
 
 headers={
     'Content-type':'application/json', 
     'Accept':'application/json',
-    'Server-Url': API_SERVER_URL    # workaround for "server_url"
+    'Server-Url': v6_api_url    # workaround for "server_url"
 }
 
 store_headers={
     'Content-type':'application/json', 
     'Accept':'application/json',
-    'Server-Url': API_SERVER_URL    # workaround for "server_url"
+    'Server-Url': v6_api_url    # workaround for "server_url"
 }
 
 jwt_server_auth_root = JWTAuth(
-    auth_url=f"{API_SERVER_URL}/token/user",
+    auth_url=f"{v6_api_url}/token/user",
     api_payload={
         'username': 'root',
         'password': 'test',
@@ -34,10 +34,10 @@ jwt_server_auth_root = JWTAuth(
 )
 
 jwt_server_auth_user1 = JWTAuth(
-    auth_url=f"{API_SERVER_URL}/token/user",
+    auth_url=f"{v6_api_url}/token/user",
     api_payload={
-        'username': 'user1',
-        'password': 'User1User1!',
+        'username': f"{v6_api_user}",
+        'password': f"{v6_api_password}",
     }
 )
 
@@ -133,16 +133,14 @@ def set_api_key(api_key, filename):
 server_session = requests.session()
 server_session.headers = headers
 server_session.auth = jwt_server_auth_root
-server_session.url = API_SERVER_URL
+server_session.url = v6_api_url
 
 store_session = requests.session()
 store_session.headers = store_headers
 store_session.auth = jwt_server_auth_root
-store_session.url = API_STORE_URL
+store_session.url = v6_store_url
 
 # make sure the test environment is up with clean volumes by running `just all-down-clean server-up`
-# out, err = subprocess.Popen(['bash', '-l', "-c", "/home/jan/.cargo/bin/just all-down-clean server-up"], env={}).communicate()
-# sys.exit(0)
 
 # verify access to the server API
 response = get(server_session, '/user')
@@ -155,26 +153,6 @@ test_collab = createIfNotExists(server_session, "/collaboration",
                                       'organization_ids': [test_org['id']],
                                       'encrypted': 0},
                                 params="name=TestCollab")
-
-# nodes_endpoint = test_collab['nodes']
-
-# nodes = session.get(API_SERVER + nodes_endpoint)
-# print(f"nodes: {nodes.json()['data']}")
-
-# create node
-#node_name = f"{test_collab['name']} - {test_org['name']}"
-#node_data = {
-#    'collaboration_id': test_collab['id'],
-#    'name': node_name,
-#    'organization_id': test_org['id']
-#    }
-#created_node = createIfNotExists(server_session, "/node", data=node_data, 
-#                params=f"name={node_name}&organization_id={test_org['id']}&collaboration_id={test_collab['id']}")
-
-# replace the API key in the .env file
-#print(f"node created, api_key: {created_node['api_key']}")
-#if 'api_key' in created_node:
-#    set_api_key(created_node['api_key'], '.env')
 
 # get roles
 roles = get(server_session, "/role")
@@ -196,10 +174,10 @@ user1 = createIfNotExists(server_session, "/user", data={
 # create the algorithm store
 #
 created_store = createIfNotExists(server_session, '/algorithmstore', data={
-        'algorithm_store_url': f"{API_STORE_URL}",
+        'algorithm_store_url': f"{v6_store_url}",
         'collaboration_id': test_collab['id'],
         'name': 'TestStore',
-        'server_url': f"{API_SERVER_URL}"
+        'server_url': f"{v6_api_url}"
         #'force': true,
     }, params = 'name=TestStore')
 
