@@ -128,7 +128,7 @@ The OHDSI Diagnostics Explorer is a Shiny application that provides an interacti
 
 #### What is the Diagnostics Explorer?
 
-The Diagnostics Explorer helps you:
+The Diagnostics Explorer helps you to:
 - **Review cohort definitions** and inclusion criteria
 - **Examine cohort characteristics** across different databases
 - **Identify potential issues** with cohort definitions
@@ -516,3 +516,4 @@ information on the OHDSI packages.
 
 ------------------------------------
 > [vantage6](https://vantage6.ai)
+
