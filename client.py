@@ -3,8 +3,10 @@ import sys
 import json
 import base64
 import argparse
+import subprocess
 from pathlib import Path
 from dotenv import load_dotenv
+
 
 def parse_arguments():
     """Parse command line arguments."""
@@ -21,7 +23,106 @@ def parse_arguments():
         default='cohort_diagnostics_results.zip',
         help='Filename for the results zip file (default: cohort_diagnostics_results.zip)'
     )
+    parser.add_argument(
+        '--prepare-r',
+        action='store_true',  # This makes it a flag, e.g., --prepare-r
+        help='Initialize an R environment for the OHDSI Diagnostics Explorer Shiny application.'
+    )
     return parser.parse_args()
+
+
+def prepare_r_environment(results_path: Path):
+    """    Sets up the R environment for the OHDSI Diagnostics Explorer Shiny app.
+    """
+    print("\n--- Executing extra task: Prepare R --- ")
+    print("Preparing R environment for the OHDSI Diagnostics Explorer viewer...")
+
+    results_dir = results_path.parent.parent
+    zip_filename = results_path.name
+    r_dir_str = str(results_dir.resolve()).replace('\\', '/')
+
+    # R code to be executed by Rscript
+    r_script_content = f"""
+    # Set the working directory to the directory containing the results zip
+    print(paste("Setting working directory to:", "{r_dir_str}"))
+    setwd("{r_dir_str}")
+    
+    # Bootstrap renv: install if not present, then initialize the environment
+    if (!requireNamespace("renv", quietly = TRUE)) {{
+        install.packages("renv")
+    }}
+    # Initialize the project-local environment, create 'renv' folder.
+    renv::init()
+
+    # Install specific packages into the renv project library
+    print("Installing packages into the renv environment...")
+    packages_to_install <- c(
+        "remotes",
+        "usethis",
+        "shiny",
+        "OHDSI/CohortDiagnostics@v3.2.5"
+    )
+    renv::install(packages_to_install)
+
+    # Load CohortDiagnostics
+    library(CohortDiagnostics)
+
+    # Create the merged results file from the zip archive
+    print(paste("Creating merged results file from:", "{zip_filename}"))
+    CohortDiagnostics::createMergedResultsFile(dataFolder = './data', overwrite = TRUE)
+
+    # Snapshot the dependencies to create renv.lock for reproducibility
+    print("Snapshotting dependencies to renv.lock...")
+    renv::snapshot()
+
+    print("\\n renv environment created, data prepared, and lockfile saved!")
+    """
+
+    r_script_path = results_dir / "prepare_cohort_diagnostics.R"
+    with open(r_script_path, "w") as f:
+        f.write(r_script_content)
+
+    try:
+        print("Executing R setup script... (this can take several minutes on the first run)")
+        process = subprocess.run(
+            ["Rscript", str(r_script_path)],
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding='utf-8'
+        )
+        print("----- R SCRIPT OUTPUT -----")
+        print(process.stdout)
+        if process.stderr:
+            print("----- R SCRIPT STDERR -----")
+            print(process.stderr)
+        print("----- END OF R SCRIPT LOGS ----- \n\n")
+
+    except FileNotFoundError:
+        print("\nError: 'Rscript' not found.")
+        print("Please ensure R is installed and its bin directory is in your system's PATH.")
+        sys.exit(1)
+    except subprocess.CalledProcessError as e:
+        print(f"\nError occurred during R script execution (Exit Code: {e.returncode}):")
+        print("----- R STDOUT -----")
+        print(e.stdout)
+        print("----- R STDERR -----")
+        print(e.stderr)
+        print("--------------------")
+        sys.exit(1)
+    finally:
+        # Clean up the temporary R script
+        if r_script_path.exists():
+            os.remove(r_script_path)
+        print("\n------------------- R preparation completed ---------------------")
+        print(f"To launch the OHDSI Diagnostics Explorer viewer, open {r_dir_str} folder in R/RStudio and run:")
+        print("-----------------------------------------------------------------")
+        print(f"  setwd({r_dir_str})")
+        print("  renv::restore()")
+        print("  library(CohortDiagnostics)")
+        print("  CohortDiagnostics::launchDiagnosticsExplorer()")
+        print("-----------------------------------------------------------------")
+
 
 def main():
     """Main function to run the cohort diagnostics."""
@@ -34,9 +135,10 @@ def main():
 
         # Create output directory if it doesn't exist
         output_path = Path(args.output_path)
-        output_path.mkdir(parents=True, exist_ok=True)
+        output_data_path = output_path / "data"
+        output_data_path.mkdir(parents=True, exist_ok=True)
 
-        print(f"Results will be saved to: {output_path / args.output_filename}")
+        print(f"Results will be saved to: {output_data_path / args.output_filename}")
 
         # Import vantage6 client
         try:
@@ -111,7 +213,7 @@ def main():
             if isinstance(parsed_result, list) and len(parsed_result) > 0 and 'zip' in parsed_result[0]:
                 zip_data_encoded = parsed_result[0]['zip']
                 zip_data = base64.b64decode(zip_data_encoded)
-                output_file = output_path / args.output_filename
+                output_file = output_data_path / args.output_filename
                 with open(output_file, 'wb') as f:
                     f.write(zip_data)
                 print(f"Results saved to: {output_file}")
@@ -119,6 +221,13 @@ def main():
                 raise ValueError("No zip data found in parsed results")
         else:
             raise ValueError("No data found in results or invalid result structure")
+
+        # Prepare R environment (renv) for Shiny app
+        if args.prepare_r:
+            if not output_file.exists():
+                print(f"Error: Cannot prepare R environment because results file is missing: {output_file}")
+                sys.exit(1)
+            prepare_r_environment(output_file)
 
     except Exception as e:
         print(f"Error occurred: {str(e)}")

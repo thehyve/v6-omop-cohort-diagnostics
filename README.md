@@ -100,6 +100,11 @@ python client.py --output-path /path/to/your/results
 python client.py --output-path /path/to/your/results --output-filename my_cohort_results.zip
 ```
 
+**Automatically prepare R environment for OHDSI Diagnostics Explorer** (optional):
+```bash
+python client.py --prepare-r
+```
+
 **View all available options**:
 ```bash
 python client.py --help
@@ -111,6 +116,7 @@ python client.py --help
 |-----------|-------------|---------|
 | `--output-path` | Directory where results will be saved | `./results` |
 | `--output-filename` | Name of the output ZIP file | `cohort_diagnostics_results.zip` |
+| `--prepare-r` | Initialize an R environment for the OHDSI Diagnostics Explorer Shiny application (optional alternative to manual R setup) | - |
 | `--help` | Show help message and exit | - |
 
 #### What the Client Does
@@ -121,6 +127,7 @@ python client.py --help
 4. **Creates and submits a task** to the Vantage6 collaboration
 5. **Waits for results** from all participating nodes
 6. **Downloads and saves** the results as a ZIP file to your specified location
+7. (*Optional*) **Prepares R environment** for the OHDSI Diagnostics Explorer Shiny application
 
 ### Viewing results using OHDSI Diagnostics Explorer
 
@@ -147,6 +154,8 @@ Before launching the Diagnostics Explorer, ensure you have:
 
 #### Step-by-Step Instructions
 
+> **💡 Automated Alternative**: You can skip the steps 1, 2 and 3 below by using the `--prepare-r` parameter when running `client.py`. This will automatically set up the R environment, install required packages, and prepare the data for the Diagnostics Explorer. See the [Running the Client](#running-the-client) section for details.
+
 **Step 1: Install Required R Packages**
 
 First, install the necessary R packages. Run the following commands in your R console:
@@ -162,11 +171,11 @@ library(usethis)
 
 1. **Navigate to your working directory** where `client.py` saved the results
 
-> **Important**: The `dataFolder` parameter should point to the directory where `client.py` saved the results. If you used the default settings, this would be the `./results` folder.
+> **Important**: The `dataFolder` parameter should point to the directory where `client.py` saved the results. If you used the default settings, this would be the `./results/data` folder.
 
 ```R
 # Navigate to the directory with client.py results
-setwd("/path/to/client_py/results")
+setwd("/path/to/client_py/results/data")
 
 # Load required libraries
 library(shiny)
@@ -185,7 +194,15 @@ CohortDiagnostics::createMergedResultsFile(dataFolder='.', overwrite=TRUE)
 
 **Step 4: Launch the Diagnostics Explorer**
 
-Once the merged results file is created, launch the interactive application:
+*If previous steps were skipped (completed using `--prepare-r` parameter),
+open results/data folder in R/RStudio first. Then run:*
+```R
+setwd({"path_to_results_data_folder"})
+renv::restore()
+library(CohortDiagnostics)
+```
+
+Launch the interactive application:
 
 ```R
 # Launch the Diagnostics Explorer
