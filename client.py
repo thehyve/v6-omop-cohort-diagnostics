@@ -331,6 +331,7 @@ def execute_cohort_diagnostics(algorithm_image, client, collaboration_id, names,
                 "temporal_covariate_settings": temporal_covariate_settings,
                 "diagnostics_settings": diagnostics_settings,
                 "meta_cohorts": [{"task_id": 13}],
+                "organizations_to_include": organisations_to_include
             },
         },
         databases=[{"label": "omop"}],
