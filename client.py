@@ -71,11 +71,7 @@ def prepare_r_environment(results_path: Path):
     print(paste("Creating merged results file from:", "{zip_filename}"))
     CohortDiagnostics::createMergedResultsFile(dataFolder = './data', overwrite = TRUE)
 
-    # Snapshot the dependencies to create renv.lock for reproducibility
-    print("Snapshotting dependencies to renv.lock...")
-    renv::snapshot()
-
-    print("\\n renv environment created, data prepared, and lockfile saved!")
+    print("\\n Merged results file created!")
     """
 
     r_script_path = results_dir / "prepare_cohort_diagnostics.R"
@@ -115,13 +111,6 @@ def prepare_r_environment(results_path: Path):
         if r_script_path.exists():
             os.remove(r_script_path)
         print("\n------------------- R preparation completed ---------------------")
-        print(f"To launch the OHDSI Diagnostics Explorer viewer, open {r_dir_str} folder in R/RStudio and run:")
-        print("-----------------------------------------------------------------")
-        print(f"  setwd('{r_dir_str}')")
-        print("  renv::restore()")
-        print("  library(CohortDiagnostics)")
-        print("  CohortDiagnostics::launchDiagnosticsExplorer()")
-        print("-----------------------------------------------------------------")
 
 
 def main():

@@ -154,7 +154,8 @@ Before launching the Diagnostics Explorer, ensure you have:
 
 There are two ways to run the Diagnostics Explorer. The recommended way is to use the included docker based
 instance of RStudio-server, in which all dependencies have been set up and locked down. See [README.md](rstudio-server/README.md) in the directory
-`rstudio-server` for instructions how to set that up.
+`rstudio-server` for instructions how to set that up. 
+This setup requires running the client.py with `--prepare-r` argument (to create .sqlite file containing merged diagnostics output).
 
 You can also follow
 the Step-by-Step instructions below, but do note that a problem with conflicting versions of dependencies can
@@ -162,8 +163,6 @@ easily hamper the correct functioning of Cohort Diagnostics, as the project is c
 recent version of Cohort Diagnostics.
 
 #### Step-by-Step Instructions
-
-> **💡 Automated Alternative**: You can skip the steps 1, 2 and 3 below by using the `--prepare-r` parameter when running `client.py`. This will automatically set up the R environment, install required packages, and prepare the data for the Diagnostics Explorer. See the [Running the Client](#running-the-client) section for details.
 
 **Step 1: Install Required R Packages**
 
@@ -202,14 +201,6 @@ CohortDiagnostics::createMergedResultsFile(dataFolder='.', overwrite=TRUE)
 ```
 
 **Step 4: Launch the Diagnostics Explorer**
-
-*If previous steps were skipped (completed using `--prepare-r` parameter),
-open results/data folder in R/RStudio first. Then run:*
-```R
-setwd({"path_to_results_data_folder"})
-renv::restore()
-library(CohortDiagnostics)
-```
 
 Launch the interactive application:
 

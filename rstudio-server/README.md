@@ -13,7 +13,7 @@ The provided `makefile` can be optionally used to run the same command.
 ## configuration
 
 Make sure the volumes in `docker-compose.yml` match your setup. The defaults work if you have saved the
-results from the execution of the Cohort Diagnostics algorithm in its default directory `results`.
+results from the execution of the Cohort Diagnostics algorithm (.sqlite file) in its default directory `results`.
 
 You can optionally alter the port or the password to your preference.
 
