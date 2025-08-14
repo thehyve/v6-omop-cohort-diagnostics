@@ -117,7 +117,7 @@ def prepare_r_environment(results_path: Path):
         print("\n------------------- R preparation completed ---------------------")
         print(f"To launch the OHDSI Diagnostics Explorer viewer, open {r_dir_str} folder in R/RStudio and run:")
         print("-----------------------------------------------------------------")
-        print(f"  setwd({r_dir_str})")
+        print(f"  setwd('{r_dir_str}')")
         print("  renv::restore()")
         print("  library(CohortDiagnostics)")
         print("  CohortDiagnostics::launchDiagnosticsExplorer()")
