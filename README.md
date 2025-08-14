@@ -100,6 +100,11 @@ python client.py --output-path /path/to/your/results
 python client.py --output-path /path/to/your/results --output-filename my_cohort_results.zip
 ```
 
+**Automatically prepare R environment for OHDSI Diagnostics Explorer** (optional):
+```bash
+python client.py --prepare-r
+```
+
 **View all available options**:
 ```bash
 python client.py --help
@@ -111,6 +116,7 @@ python client.py --help
 |-----------|-------------|---------|
 | `--output-path` | Directory where results will be saved | `./results` |
 | `--output-filename` | Name of the output ZIP file | `cohort_diagnostics_results.zip` |
+| `--prepare-r` | Initialize an R environment for the OHDSI Diagnostics Explorer Shiny application (optional alternative to manual R setup) | - |
 | `--help` | Show help message and exit | - |
 
 #### What the Client Does
@@ -121,6 +127,7 @@ python client.py --help
 4. **Creates and submits a task** to the Vantage6 collaboration
 5. **Waits for results** from all participating nodes
 6. **Downloads and saves** the results as a ZIP file to your specified location
+7. (*Optional*) **Prepares R environment** for the OHDSI Diagnostics Explorer Shiny application
 
 ### Viewing results using OHDSI Diagnostics Explorer
 
@@ -145,6 +152,16 @@ Before launching the Diagnostics Explorer, ensure you have:
 1. **R and RStudio installed** (R version 4.0 or higher recommended)
 2. **Results from the client.py script** (ZIP file containing diagnostic outputs)
 
+There are two ways to run the Diagnostics Explorer. The recommended way is to use the included docker based
+instance of RStudio-server, in which all dependencies have been set up and locked down. See [README.md](rstudio-server/README.md) in the directory
+`rstudio-server` for instructions how to set that up. 
+This setup requires running the client.py with `--prepare-r` argument (to create .sqlite file containing merged diagnostics output).
+
+You can also follow
+the Step-by-Step instructions below, but do note that a problem with conflicting versions of dependencies can
+easily hamper the correct functioning of Cohort Diagnostics, as the project is currently not based on the most
+recent version of Cohort Diagnostics.
+
 #### Step-by-Step Instructions
 
 **Step 1: Install Required R Packages**
@@ -162,11 +179,11 @@ library(usethis)
 
 1. **Navigate to your working directory** where `client.py` saved the results
 
-> **Important**: The `dataFolder` parameter should point to the directory where `client.py` saved the results. If you used the default settings, this would be the `./results` folder.
+> **Important**: The `dataFolder` parameter should point to the directory where `client.py` saved the results. If you used the default settings, this would be the `./results/data` folder.
 
 ```R
 # Navigate to the directory with client.py results
-setwd("/path/to/client_py/results")
+setwd("/path/to/client_py/results/data")
 
 # Load required libraries
 library(shiny)
@@ -185,7 +202,7 @@ CohortDiagnostics::createMergedResultsFile(dataFolder='.', overwrite=TRUE)
 
 **Step 4: Launch the Diagnostics Explorer**
 
-Once the merged results file is created, launch the interactive application:
+Launch the interactive application:
 
 ```R
 # Launch the Diagnostics Explorer
