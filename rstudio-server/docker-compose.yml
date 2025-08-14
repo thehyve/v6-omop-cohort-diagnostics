@@ -1,0 +1,10 @@
+services:
+  rstudio:
+    image: rockstudio-v6-cohort-diagnostics:latest
+    ports:
+      - "8787:8787"
+    environment:
+      PASSWORD: password
+    volumes:
+      - ./.rstudio_config:/home/rstudio/.config/rstudio
+      - ../results:/home/rstudio/workspace
