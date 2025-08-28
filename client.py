@@ -144,6 +144,7 @@ def main():
         v6_api_password = os.getenv("V6_API_PASSWORD")
         collaboration_id_str = os.getenv("COLLABORATION_ID")
         algorithm_image = os.getenv("ALGORITHM_IMAGE")
+        main_process_organisation_id_str = os.getenv("MAIN_PROCESS_ORGANISATION_ID")
         organisations_ids_str = os.getenv("ORGANISATIONS_IDS")
 
         # Validate required environment variables
@@ -152,6 +153,7 @@ def main():
             "V6_API_USER": v6_api_user,
             "V6_API_PASSWORD": v6_api_password,
             "COLLABORATION_ID": collaboration_id_str,
+            "MAIN_PROCESS_ORGANISATION_ID": main_process_organisation_id_str,
             "ALGORITHM_IMAGE": algorithm_image,
             "ORGANISATIONS_IDS": organisations_ids_str
         }
@@ -169,6 +171,7 @@ def main():
         # Parse validated environment variables
         organisations_to_include = [int(x.strip()) for x in organisations_ids_str.split(",")]
         collaboration_id = int(collaboration_id_str)
+        main_process_organisation_id = int(main_process_organisation_id_str)
 
         # Authenticate to the vantage6 server
         print("Connecting to vantage6 server...")
@@ -192,7 +195,7 @@ def main():
         print(f"Loaded {len(files)} cohort definitions: {names}")
 
         result_json = execute_cohort_diagnostics(algorithm_image, client, collaboration_id, names, omop_jsons,
-                                                 organisations_to_include)
+                                                 organisations_to_include, main_process_organisation_id)
 
         if result_json and 'data' in result_json and len(result_json['data']) > 0 and 'result' in result_json['data'][0]:
             print("Extracting zip data from results...")
@@ -223,7 +226,7 @@ def main():
         sys.exit(1)
 
 
-def execute_cohort_diagnostics(algorithm_image, client, collaboration_id, names, omop_jsons, organisations_to_include):
+def execute_cohort_diagnostics(algorithm_image, client, collaboration_id, names, omop_jsons, organisations_to_include, main_process_organisation_id):
     # Create covariate settings
     # To see all the available options please refer to the documentation of the
     # OHDSI package: https://ohdsi.github.io/FeatureExtraction/reference/createTemporalCovariateSettings.html.
@@ -304,12 +307,12 @@ def execute_cohort_diagnostics(algorithm_image, client, collaboration_id, names,
         "run_cohort_relationship": True,
         "run_temporal_cohort_characterization": True,
     }
-    # Create a new vantage6 task that executes the cohort diagnostics at all the
-    # nodes that are part of the collaboration.
+    # Create a new vantage6 task that executes the cohort diagnostics at the
+    # nodes from organisations_to_include (that are part of the collaboration).
     print("Creating vantage6 task...")
     task = client.task.create(
         collaboration=collaboration_id,
-        organizations=organisations_to_include,
+        organizations=[main_process_organisation_id],
         name="omop-test",
         description="@",
         input_={
