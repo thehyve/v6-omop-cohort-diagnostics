@@ -18,12 +18,6 @@ def parse_arguments():
         help='Path where results will be saved (default: ./results)'
     )
     parser.add_argument(
-        '--output-filename',
-        type=str,
-        default='cohort_diagnostics_results.zip',
-        help='Filename for the results zip file (default: cohort_diagnostics_results.zip)'
-    )
-    parser.add_argument(
         '--prepare-r',
         action='store_true',  # This makes it a flag, e.g., --prepare-r
         help='Initialize an R environment for the OHDSI Diagnostics Explorer Shiny application.'
@@ -37,9 +31,8 @@ def prepare_r_environment(results_path: Path):
     print("\n--- Executing extra task: Prepare R --- ")
     print("Preparing R environment for the OHDSI Diagnostics Explorer viewer...")
 
-    results_dir = results_path.parent.parent
     zip_filename = results_path.name
-    r_dir_str = str(results_dir.resolve()).replace('\\', '/')
+    r_dir_str = str(results_path.resolve()).replace('\\', '/')
 
     # R code to be executed by Rscript
     r_script_content = f"""
@@ -60,6 +53,9 @@ def prepare_r_environment(results_path: Path):
         "remotes",
         "usethis",
         "shiny",
+        "OHDSI/DatabaseConnector@v6.2.4",
+        "OHDSI/FeatureExtraction@v3.3.1",
+        "OHDSI/OhdsiShinyModules@v2.1.5",
         "OHDSI/CohortDiagnostics@v3.2.5"
     )
     renv::install(packages_to_install)
@@ -69,12 +65,12 @@ def prepare_r_environment(results_path: Path):
 
     # Create the merged results file from the zip archive
     print(paste("Creating merged results file from:", "{zip_filename}"))
-    CohortDiagnostics::createMergedResultsFile(dataFolder = './data', overwrite = TRUE)
+    CohortDiagnostics::createMergedResultsFile(dataFolder = '.', overwrite = TRUE)
 
     print("\\n Merged results file created!")
     """
 
-    r_script_path = results_dir / "prepare_cohort_diagnostics.R"
+    r_script_path = results_path / "prepare_cohort_diagnostics.R"
     with open(r_script_path, "w") as f:
         f.write(r_script_content)
 
@@ -127,7 +123,7 @@ def main():
         output_data_path = output_path / "data"
         output_data_path.mkdir(parents=True, exist_ok=True)
 
-        print(f"Results will be saved to: {output_data_path / args.output_filename}")
+        print(f"Results will be saved to: {output_data_path}")
 
         # Import vantage6 client
         try:
@@ -144,6 +140,7 @@ def main():
         v6_api_password = os.getenv("V6_API_PASSWORD")
         collaboration_id_str = os.getenv("COLLABORATION_ID")
         algorithm_image = os.getenv("ALGORITHM_IMAGE")
+        main_process_organisation_id_str = os.getenv("MAIN_PROCESS_ORGANISATION_ID")
         organisations_ids_str = os.getenv("ORGANISATIONS_IDS")
 
         # Validate required environment variables
@@ -152,6 +149,7 @@ def main():
             "V6_API_USER": v6_api_user,
             "V6_API_PASSWORD": v6_api_password,
             "COLLABORATION_ID": collaboration_id_str,
+            "MAIN_PROCESS_ORGANISATION_ID": main_process_organisation_id_str,
             "ALGORITHM_IMAGE": algorithm_image,
             "ORGANISATIONS_IDS": organisations_ids_str
         }
@@ -169,6 +167,7 @@ def main():
         # Parse validated environment variables
         organisations_to_include = [int(x.strip()) for x in organisations_ids_str.split(",")]
         collaboration_id = int(collaboration_id_str)
+        main_process_organisation_id = int(main_process_organisation_id_str)
 
         # Authenticate to the vantage6 server
         print("Connecting to vantage6 server...")
@@ -192,38 +191,37 @@ def main():
         print(f"Loaded {len(files)} cohort definitions: {names}")
 
         result_json = execute_cohort_diagnostics(algorithm_image, client, collaboration_id, names, omop_jsons,
-                                                 organisations_to_include)
+                                                 organisations_to_include, main_process_organisation_id)
 
         if result_json and 'data' in result_json and len(result_json['data']) > 0 and 'result' in result_json['data'][0]:
             print("Extracting zip data from results...")
             result_data = result_json['data'][0]['result']
-            parsed_result = json.loads(result_data)
+            parsed_results = json.loads(result_data)
 
-            if isinstance(parsed_result, list) and len(parsed_result) > 0 and 'zip' in parsed_result[0]:
-                zip_data_encoded = parsed_result[0]['zip']
-                zip_data = base64.b64decode(zip_data_encoded)
-                output_file = output_data_path / args.output_filename
-                with open(output_file, 'wb') as f:
-                    f.write(zip_data)
-                print(f"Results saved to: {output_file}")
-            else:
-                raise ValueError("No zip data found in parsed results")
+            for parsed_result in parsed_results:
+                if isinstance(parsed_result, dict) and len(parsed_result) > 0 and 'organization_id' in parsed_result and 'zip' in parsed_result:
+                    zip_data_encoded = parsed_result['zip']
+                    zip_data = base64.b64decode(zip_data_encoded)
+                    output_file = Path(output_data_path, 'org_' + str(parsed_result['organization_id']) + '.zip')
+                    print(f"Saving results to: {output_file}")
+                    with open(output_file, 'wb') as f:
+                        f.write(zip_data)
+                    print(f"Results saved to: {output_file}")
+                else:
+                    raise ValueError("No zip data found in parsed results")
         else:
             raise ValueError("No data found in results or invalid result structure")
 
         # Prepare R environment (renv) for Shiny app
         if args.prepare_r:
-            if not output_file.exists():
-                print(f"Error: Cannot prepare R environment because results file is missing: {output_file}")
-                sys.exit(1)
-            prepare_r_environment(output_file)
+            prepare_r_environment(output_data_path)
 
     except Exception as e:
         print(f"Error occurred: {str(e)}")
         sys.exit(1)
 
 
-def execute_cohort_diagnostics(algorithm_image, client, collaboration_id, names, omop_jsons, organisations_to_include):
+def execute_cohort_diagnostics(algorithm_image, client, collaboration_id, names, omop_jsons, organisations_to_include, main_process_organisation_id):
     # Create covariate settings
     # To see all the available options please refer to the documentation of the
     # OHDSI package: https://ohdsi.github.io/FeatureExtraction/reference/createTemporalCovariateSettings.html.
@@ -304,12 +302,12 @@ def execute_cohort_diagnostics(algorithm_image, client, collaboration_id, names,
         "run_cohort_relationship": True,
         "run_temporal_cohort_characterization": True,
     }
-    # Create a new vantage6 task that executes the cohort diagnostics at all the
-    # nodes that are part of the collaboration.
+    # Create a new vantage6 task that executes the cohort diagnostics at the
+    # nodes from organisations_to_include (that are part of the collaboration).
     print("Creating vantage6 task...")
     task = client.task.create(
         collaboration=collaboration_id,
-        organizations=organisations_to_include,
+        organizations=[main_process_organisation_id],
         name="omop-test",
         description="@",
         input_={
